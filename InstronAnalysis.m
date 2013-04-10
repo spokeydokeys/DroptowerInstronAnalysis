@@ -19,7 +19,7 @@ classdef InstronAnalysis < Specimen
         % results members from interpolation analysis
         m_time;             % in seconds
         m_force;            % in newtons, compressive force
-        m_displacementTroch;     % in mm compression
+        m_displacementTroch;    % in mm compression
         m_displacementPlaten;   % in mm compression
         m_compression;      % in mm. Specimen compression
         m_strainGaugeP1;    % in strain
@@ -62,6 +62,9 @@ classdef InstronAnalysis < Specimen
         
         % Function to read in the data from the DAQ file
         function ReadDAQFile(IA)
+            if isempty(IA.m_fileNameDAQ)
+                error('InstronAnalysis:DataAvailability','Data file read for %s was requested before the file name was set.\n',IA.m_specimenName);
+            end
             load(IA.m_fileNameDAQ);
             IA.m_timeDAQ = time;
             IA.m_forceDAQ = force;
@@ -70,6 +73,8 @@ classdef InstronAnalysis < Specimen
             IA.m_strainGaugeP2DAQ = pStrain2;
             IA.m_strainGaugePhiDAQ = phi;
             IA.m_triggerDAQ = trigger;
+            % zero time at the trigger
+            IA.ZeroDAQTimeAtTrigger;
         end     
         
         function o = GetDICDataClass(IA)
@@ -323,10 +328,7 @@ classdef InstronAnalysis < Specimen
         function o = GetForceAtTime(IA,time)
             o = interp1(IA.m_time,IA.m_force,time);
         end
-        
-        
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%% COMPLETE THESE FUNCTIONS %%%%%%%%%%%%        
-        
+                
         function AnalyzeInstronData(IA)
             % Check if DAQ analysis will be done
             if IA.m_instronDAQ
@@ -347,7 +349,7 @@ classdef InstronAnalysis < Specimen
                 end
                 
                 % first read in and account for the trigger
-                IA.ZeroDAQTimeAtTrigger
+                IA.ReadDAQFile;
                 % next put everything into the common time vecotr for the
                 % analysis. If there is DIC data it will also be
                 % interpolated into this time space
