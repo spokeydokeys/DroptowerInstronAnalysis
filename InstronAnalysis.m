@@ -14,13 +14,13 @@ classdef InstronAnalysis < Specimen
         m_dicData;          % only used if DIC data is available.
         
         % machine members
-        m_instronCompliance = 0;
+        m_instronCompliance = 1/30000; % m/N loading plate compliance
         
         % results members from interpolation analysis
         m_time;             % in seconds
         m_force;            % in newtons, compressive force
-        m_displacement;     % in mm compression
-        m_platenDisplacement;   % in mm compression
+        m_displacementTroch;     % in mm compression
+        m_displacementPlaten;   % in mm compression
         m_compression;      % in mm. Specimen compression
         m_strainGaugeP1;    % in strain
         m_strainGaugeP2;    % in strain
@@ -124,9 +124,9 @@ classdef InstronAnalysis < Specimen
             IA.m_strainGaugeP2 = interp1(IA.m_timeDAQ, IA.m_strainGaugeP2DAQ, IA.m_time);
             IA.m_strainGaugePhi = interp1(IA.m_timeDAQ, IA.m_strainGaugePhiDAQ, IA.m_time);
             % interpolate the displacement and account for the instron compression at the same time.
-            IA.m_displacement = -interp1(IA.m_timeDAQ, IA.m_displacementDAQ, IA.m_time);
-            IA.m_platenDisplacement = IA.m_force.*IA.m_instronCompliance;
-            IA.m_compression = IA.m_displacement - IA.m_platenDisplacement;
+            IA.m_displacementTroch = -interp1(IA.m_timeDAQ, IA.m_displacementDAQ, IA.m_time);
+            IA.m_displacementPlaten = IA.m_force.*IA.m_instronCompliance;
+            IA.m_compression = IA.m_displacementTroch - IA.m_displacementPlaten;
         end
         
         function InterpolateDICToCommonTime(IA)
@@ -156,8 +156,14 @@ classdef InstronAnalysis < Specimen
         function o = GetStrainDIC(IA)
             o = IA.m_strainDIC;
         end
-        function o = GetDisplacement(IA)
-            o = IA.m_displacement;
+        function o = GetDisplacementTroch(IA)
+            o = IA.m_displacementTroch;
+        end
+        function o = GetDisplacementPlaten(IA)
+            o = IA.m_displacementPlaten;
+        end
+        function o = GetCompression(IA)
+            o = IA.m_compression;
         end
         
         % function to find the max force
@@ -222,13 +228,13 @@ classdef InstronAnalysis < Specimen
             end
             energy = 0;
             for i = 1:IA.m_indexForceMax-1
-                if ( isnan(IA.m_displacement(i)) || isnan(IA.m_force(i)) )  % skip all the data until we have valid displacements and forces
+                if ( isnan(IA.m_compression(i)) || isnan(IA.m_force(i)) )  % skip all the data until we have valid displacements and forces
                     continue
                 end
                 forceA = IA.m_force(i);
                 forceB = IA.m_force(i+1);
-                dispA = IA.m_displacement(i)/1000; %mm to m
-                dispB = IA.m_displacement(i+1)/1000;
+                dispA = IA.m_compression(i)/1000; %mm to m
+                dispB = IA.m_compression(i+1)/1000;
                 energy = energy + (dispB-dispA)* mean([forceA forceB]);
             end
             IA.m_energy = energy;

@@ -17,7 +17,9 @@ classdef DTAnalysis < Specimen
         m_displacementData;
         
         % machine members
-        m_dtCompliance = 0;
+        m_loadingPlateCompliance = 1/30118000;  % N/m the loading plate compliance from the quasistatic testing
+        m_dtCompliance = 1/5640000;             % N/m the compliance of the dt base 
+        m_dtMass = 23.18 + 6.419 + 21.36 + 9.94 + 35; % kg, mass of (Angle platen) + loadcell + t-slot + (DT base/3) + mounting apparatus
         
         % results members from interpolation
         m_time;
@@ -41,6 +43,7 @@ classdef DTAnalysis < Specimen
         m_timeForceMax;
         m_indexForceMax;
         m_displacementForceMax;
+        
     end
     
     methods
