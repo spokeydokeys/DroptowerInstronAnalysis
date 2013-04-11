@@ -22,6 +22,9 @@ classdef DTDisplacementData < Specimen
         % a function to set the file name
         function SetFileName(DTDD,file)
             if file ~= DTDD.m_fileName
+                if ~exists(file,'file')
+                    error('DropTowerDisplacement:DataAvailability','The specified displacement file for %s does not exist.\n',DTDD.m_specimenName);
+                end
                 DTDD.m_fileName = file;
             end
         end
@@ -51,7 +54,7 @@ classdef DTDisplacementData < Specimen
         
         function ReadFile(DTDD)
             if isempty(DTDD.m_fileName)
-                error('DropTowerDisplacement:DataAvailability','File Read was called for %s when no file name has been set.\n',DTDD.m_specimentName);
+                error('DropTowerDisplacement:DataAvailability','File read was called for %s when no file name has been set.\n',DTDD.m_specimenName);
             end
             % read the file
             data = importdata(DTDD.m_fileName,'\t');
@@ -88,7 +91,7 @@ classdef DTDisplacementData < Specimen
         % functions to set get the filter order
         function SetFilterOrder(DTDD,order)
              if mod(order, 2)
-                warning('DropTowerDisplacement:DataValues','The filter order for %s was set to an odd number, Only even orders are accepted. The order is being increased by one.\n',DTDD.m_specimenName);
+                warning('DropTowerDisplacement:DataValues','The filter order for %s was set to an odd number. Only even orders are accepted. The order is being increased by one.\n',DTDD.m_specimenName);
                 order = order +1;
             end
             DTDD.m_filterOrder = order;

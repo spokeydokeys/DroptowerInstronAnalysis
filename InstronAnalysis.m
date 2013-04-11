@@ -1,20 +1,13 @@
 classdef InstronAnalysis < Specimen
     properties (SetAccess = private)
         % members from the DAQ equipment
-        m_forceDAQ
-        m_displacementDAQ;
-        m_strainGaugeP1DAQ;
-        m_strainGaugeP2DAQ;
-        m_strainGaugePhiDAQ;
-        m_triggerDAQ;
-        m_timeDAQ;
-        m_fileNameDAQ;
+        m_daq;
         
         % members from the dic
         m_dicData;          % only used if DIC data is available.
         
         % machine members
-        m_instronCompliance = 1/30000; % m/N loading plate compliance
+        m_instronCompliance = 1/30118000; % m/N loading plate compliance
         
         % results members from interpolation analysis
         m_time;             % in seconds
@@ -22,14 +15,16 @@ classdef InstronAnalysis < Specimen
         m_displacementTroch;    % in mm compression
         m_displacementPlaten;   % in mm compression
         m_compression;      % in mm. Specimen compression
-        m_strainGaugeP1;    % in strain
-        m_strainGaugeP2;    % in strain
-        m_strainGaugePhi;   % in rad
-        m_strainDIC;        % in strain, minimum principal strain on surface
+        m_strainGauge1;
+        m_strainGauge2;
+        m_strainGauge3;
+        m_strainGaugeP1;
+        m_strainGaugeP2;
+        m_strainGaugePhi;
         
         % results members from analysis
         m_stiffness;        % in kN/mm
-        m_energy;           % J           
+        m_energyToForceMax; % J
         m_strainAtMaxDIC;
         m_strainAtMaxGauge; % in strain, minimum principal stain
         m_frameAtMax;       % the dic frame at max force
@@ -47,99 +42,57 @@ classdef InstronAnalysis < Specimen
             % name, dxa, op and data are inherited from "Specimen.m". See
             % Specimen.m for details.
             IA = IA@Specimen(name,dxa,op,data);
+            if data(1)
+                IA.m_daq = DAQInstron(name,dxa,op,data);
+            end
             if data(2)
                 IA.m_dicData = DICData(name,dxa,op,data);
             end
         end
         
-        function SetFileNameDAQ(IA,fileDAQ)
-           while(~exist(fileDAQ,'file'))
-                sprintf('The specified DAQ data file does not exist\n');
-                fileDAQ = input('Please enter a valid DAQ file location');
-            end 
-            IA.m_fileNameDAQ = fileDAQ;
-        end
-        
-        % Function to read in the data from the DAQ file
-        function ReadDAQFile(IA)
-            if isempty(IA.m_fileNameDAQ)
-                error('InstronAnalysis:DataAvailability','Data file read for %s was requested before the file name was set.\n',IA.m_specimenName);
-            end
-            load(IA.m_fileNameDAQ);
-            IA.m_timeDAQ = time;
-            IA.m_forceDAQ = force;
-            IA.m_displacementDAQ = displacement;
-            IA.m_strainGaugeP1DAQ = pStrain1;
-            IA.m_strainGaugeP2DAQ = pStrain2;
-            IA.m_strainGaugePhiDAQ = phi;
-            IA.m_triggerDAQ = trigger;
-            % zero time at the trigger
-            IA.ZeroDAQTimeAtTrigger;
-        end     
-        
+        % function to get the DIC data class
         function o = GetDICDataClass(IA)
             o = IA.m_dicData;
+        end
+        
+        % functio to get the DAQ data class
+        function o = GetDAQDataClass(IA)
+            o = IA.m_daq;
         end
     
         function SetInstronCompliance(IA,compliance)
             IA.m_instronCompliance = compliance;
         end
-        
-        function ZeroDAQTimeAtTrigger(IA)
-            index = find(IA.m_triggerDAQ<4.9,1,'first');
-            IA.m_timeDAQ = IA.m_timeDAQ - IA.m_timeDAQ(index);
-        end
-        
-        % Functions to get the DAQ data. Can only be set using ReadDAQFile
-        function o = GetForceDAQ(IA)
-            o = IA.m_forceDAQ;
-        end
-        function o = GetTimeDAQ(IA)
-            o = IA.m_timeDAQ;
-        end
-        function o = GetDisplacementDAQ(IA)
-            o = IA.m_displacementDAQ;
-        end
-        function o = GetStrainP1DAQ(IA)
-            o = IA.m_strainGaugeP1DAQ;
-        end
-        function o = GetStrainP2DAQ(IA)
-            o = IA.m_strainGaugeP2DAQ;
-        end
-        function o = GetStrainPhiDAQ(IA)
-            o = IA.m_strainGaugePhiDAQ;
-        end
-        function o = GetTriggerDAQ(IA)
-            o = IA.m_triggerDAQ;
-        end
-        function o = GetFileNameDAQ(IA)
-            o = IA.m_fileNameDAQ;
-        end
-        
+    
         function CreateCommonTimeVector(IA)
             IA.m_time = linspace(-.2,15,76000);
         end
         
         function InterpolateDAQToCommonTime(IA)
             if isempty(IA.m_time)
-                IA.CreateCommonTimeVector
+                IA.CreateCommonTimeVector()
             end
-            IA.m_force = -interp1(IA.m_timeDAQ, IA.m_forceDAQ, IA.m_time); % negative to get compressive force
-            IA.m_strainGaugeP1 = interp1(IA.m_timeDAQ, IA.m_strainGaugeP1DAQ, IA.m_time);
-            IA.m_strainGaugeP2 = interp1(IA.m_timeDAQ, IA.m_strainGaugeP2DAQ, IA.m_time);
-            IA.m_strainGaugePhi = interp1(IA.m_timeDAQ, IA.m_strainGaugePhiDAQ, IA.m_time);
-            % interpolate the displacement and account for the instron compression at the same time.
-            IA.m_displacementTroch = -interp1(IA.m_timeDAQ, IA.m_displacementDAQ, IA.m_time);
+            IA.m_force = -interp1(IA.GetDAQDataClass.GetTime(), IA.GetDAQDataClass.GetForce(), IA.m_time); % negative to get compressive force
+            
+            IA.m_displacementTroch = -interp1(IA.GetDAQDataClass.GetTime(), IA.GetDAQDataClass.GetDisplacement(), IA.m_time);
             IA.m_displacementPlaten = IA.m_force.*IA.m_instronCompliance;
             IA.m_compression = IA.m_displacementTroch - IA.m_displacementPlaten;
+                     
+            IA.m_strainGauge1 = interp1(IA.GetDAQDataClass.GetTime(), IA.GetDAQDataClass.GetStrainGauge1(), IA.m_time);
+            IA.m_strainGauge2 = interp1(IA.GetDAQDataClass.GetTime(), IA.GetDAQDataClass.GetStrainGauge2(), IA.m_time);
+            IA.m_strainGauge3 = interp1(IA.GetDAQDataClass.GetTime(), IA.GetDAQDataClass.GetStrainGauge3(), IA.m_time);
+            
+            IA.m_strainGaugeP1 = interp1(IA.GetDAQDataClass.GetTime(), IA.GetDAQDataClass.GetPrincipalStrain1(), IA.m_time);
+            IA.m_strainGaugeP2 = interp1(IA.GetDAQDataClass.GetTime(), IA.GetDAQDataClass.GetPrincipalStrain2(), IA.m_time);
+            IA.m_strainGaugePhi = interp1(IA.GetDAQDataClass.GetTime(), IA.GetDAQDataClass.GetPrincipalStrainAngle(), IA.m_time);
         end
         
         function InterpolateDICToCommonTime(IA)
             if isempty(IA.m_time)
-                IA.CreateCommonTimeVector
+                IA.CreateCommonTimeVector()
             end
             % interpolate the DIC strain an convert from % to strain
-            IA.m_strainDIC = interp1(IA.m_dicData.GetTime(), IA.m_dicData.GetStrainData(), IA.m_time)./100;
+            IA.m_strainDIC = interp1(IA.GetDICDataClass.GetTime(), IA.m_dicData.GetStrainData(), IA.m_time)./100;
         end
         
         % functions to get the interpolated data
@@ -204,7 +157,7 @@ classdef InstronAnalysis < Specimen
         % function to calculate the stiffness
         function CalcStiffness(IA)
             if isempty(IA.m_forceMax)
-                IA.CalcForceMax
+                IA.CalcForceMax()
                 warning('InstronAnalysis:ExecutionOrder','Stiffness requested for %s before calculation of max force.\nMax force calculation being executed now.\n',IA.m_specimenName)
             end 
             % get the second force level for stiffness calculation
@@ -228,8 +181,8 @@ classdef InstronAnalysis < Specimen
         % function to calculate the energy during loading
         function CalcEnergy(IA)
             if isempty(IA.m_forceMax)
-                IA.CalcForceMax
                 warning('InstronAnalysis:ExecutionOrder','Energy to max force requested for %s before calculation of max force.\nMax force calculation being executed now.\n',IA.m_specimenName)
+                 IA.CalcForceMax()           
             end
             energy = 0;
             for i = 1:IA.m_indexForceMax-1
@@ -242,12 +195,12 @@ classdef InstronAnalysis < Specimen
                 dispB = IA.m_compression(i+1)/1000;
                 energy = energy + (dispB-dispA)* mean([forceA forceB]);
             end
-            IA.m_energy = energy;
+            IA.m_energyToForceMax = energy;
         end
         
         % function to get the energy during loading
         function o = GetEnergy(IA)
-            o = IA.m_energy;
+            o = IA.m_energyToForceMax;
         end
         
         % functin to calculate the strain at the gauge max
@@ -277,45 +230,76 @@ classdef InstronAnalysis < Specimen
             o = IA.m_strainAtMaxDIC;
         end
         
+        % a function to get the DIC frame at max load
+        function o = GetFrameAtMax(IA)
+            if isempty(IA.m_frameAtMax)
+                IA.CalcFrameAtMax();
+            end
+            o = IA.m_frameAtMax;
+        end
         function CalcFrameAtMax(IA)
             % get the experiment time of the max force.
             % subtract the DIC time from that time
-            % multiply that time in seconds by the rate of the DIC            
+            % multiply that time in seconds by the rate of the DIC
+            if isempty(IA.m_timeForceMax)
+                error('InstronAnalysis:DataAvailability','DIC frame at max load for %s requested before time at max load has been set.\n',IA.m_specimenName);
+            end
+            if isempty(IA.GetDICDataClass)
+                error('InstronAnalysis:DataAvailability','DIC frame at max load for %s requested when no DIC data is available.\n',IA.m_specimenName);
+            end
             IA.m_frameAtMax = ( IA.m_timeForceMax - IA.GetDICDataClass.GetStartTime )*IA.GetDICDataClass.GetSampleRate;
         end
-        function o = GetFrameAtMax(IA)
-            o = IA.m_frameAtMax;
-        end
         
+        % function to get the strain error
+        function o = GetStrainError(IA)
+            if isempty(IA.m_strainError)
+                IA.CalcStrainError()
+            end
+            o =IA.m_strainError;
+        end      
         function CalcStrainError(IA)
+            if ( isempty(IA.m_strainGaugeP2) || isempty(IA.m_strainDIC) )
+                error('InstronAnalysis:DataAvailability','Strain error requested for %s when either gauge minimum principal strain or DIC minimum principal strain are unavailable.\n',IA.m_specimenName);
+            end
             % subtract the strain gauge P2 from StrainDIC for all time
             IA.m_strainError = IA.m_strainGaugeP2 - IA.m_strainDIC;
         end
-        function o = GetStrainError(IA)
-            o =IA. m_strainError;
+        
+        % function to get the mean strain error
+        function o = GetStrainErrorMean(IA)
+            if isempty(IA.m_strainErrorMean)
+                IA.CalcStrainErrorMean()
+            end
+            o = IA.m_strainErrorMean;
         end
-       
-        function CalcStrainErrorMean(IA)     
+        function CalcStrainErrorMean(IA)
+            if isempty(IA.m_strainError)
+                error('InstronAnalysis:DataAvailability','Mean strain error requested for %s when strain error vector is unavailable.\n',IA.m_specimenName);
+            end
             % find the last index for which DIC strain is defined and
             % subtract 1 second to remove spike at end of data
             validData = ~isnan(IA.m_strainError);
             lastIndex = find(validData == 1,1,'last')-5000;                        
             IA.m_strainErrorMean = mean(IA.m_strainError(validData(1:lastIndex)));
         end
-        function o = GetStrainErrorMean(IA)
-            o = IA.m_strainErrorMean;
-        end
-         
+
+        function o = GetStrainErrorStdev(IA)
+            if isempty(IA.m_strainErrorStdev)
+                IA.CalcStrainErrorStdev();
+            end
+            o = IA.m_strainErrorStdev;
+        end        
         function CalcStrainErrorStdev(IA)
+            if isempty(IA.m_strainError)
+                error('InstronAnalysis:DataAvailability','The standard deviation of the strain error requested for %s when strain error vector is unavailable.\n',IA.m_specimenName);
+            end
             % find the last index for which DIC strain is defined and
             % subtract 1 second to remove spike at end of data
             validData = ~isnan(IA.m_strainError);
             lastIndex = find(validData == 1,1,'last')-5000;                        
             IA.m_strainErrorStdev = std(IA.m_strainError(validData(1:lastIndex)));
         end
-        function o = GetStrainErrorStdev(IA)
-            o = IA.m_strainErrorStdve;
-        end
+
         
         % function to get the specimen compression at a give time using
         % linear interpolation
@@ -331,35 +315,49 @@ classdef InstronAnalysis < Specimen
                 
         function AnalyzeInstronData(IA)
             % Check if DAQ analysis will be done
-            if IA.m_instronDAQ
+            if IA.m_daq
                 % Warnings will be issued so that you get a list of all
                 % data errors, then this will be used as a flag to stop
                 % execution at the end of the integrety check
                 errorFlag = 0; 
                 % now check that the data is available
-                if ~ischar(IA.m_fileNameDAQ)
-                    warning('InstronAnalysis:FileNameDAQ','This error is fatal. No DAQ file name for specimen %s was provided before calling AnalyzeInstronData.\n',IA.m_specimenName);
+                if ~ischar( IA.GetDAQDataClass.GetFileName() )
+                    warning('InstronAnalysis:DataAvailability','This error is fatal. No DAQ file name for specimen %s was provided before calling AnalyzeInstronData.\n',IA.m_specimenName);
                     errorFlag = errorFlag + 1;
                 end
-                if IA.m_instronCompliance == 0
-                    warning('InstronAnalysis:Compliance','The compliance of the instron is set to zero for specimen %s. Continuing with execution.\n',IA.m_specimenName);
+                if isempty( IA.GetDAQDataClass.GetSampleRate() )
+                    warning('InstronAnalysis:DataAvailability','This error is fatal. The sample rate for the DAQ for sepcimen %s was not provided before calling AnalyzeInstronData.\n',IA.m_specimenName);
+                    errorFlag = errorFlag + 1;
                 end
+                if isempty( IA.GetDAQDataClass.GetFilterCutoff() )
+                    warning('InstronAnalysis:DataAvailability','This error is fatal. The filter cutoff for DAQ filtering for sepcimen %s was not provided before calling AnalyzeInstronData.\n',IA.m_specimenName);
+                    errorFlag = errorFlag + 1;
+                end
+                if isempty( IA.GetDAQDataClass.GetGainDisplacement() )
+                    warning('InstronAnalysis:DataAvailability','This error is fatal. The DAQ displacement gain for sepcimen %s was not provided before calling AnalyzeInstronData.\n',IA.m_specimenName);
+                    errorFlag = errorFlag + 1;
+                end
+                if isempty( IA.GetDAQDataClass.GetGainLoad() )
+                    warning('InstronAnalysis:DataAvailability','This error is fatal. The DAQ load gain for sepcimen %s was not provided before calling AnalyzeInstronData.\n',IA.m_specimenName);
+                    errorFlag = errorFlag + 1;
+                end
+                
                 if errorFlag
                     error('InstronAnalysis:AnalyzeDAQData','%d errors were detected when preparing to analyze the Instron DAQ data for specimen %s.\n',errorFlag,IA.m_specimenName);
                 end
                 
                 % first read in and account for the trigger
-                IA.ReadDAQFile;
+                IA.GetDAQDataClass.ReadFile()
                 % next put everything into the common time vecotr for the
                 % analysis. If there is DIC data it will also be
                 % interpolated into this time space
-                IA.InterpolateDAQToCommonTime
+                IA.InterpolateDAQToCommonTime()
                 % Find the max force and its time and index
-                IA.CalcForceMax
+                IA.CalcForceMax()
                 % Find the stiffness
-                IA.CalcStiffness
+                IA.CalcStiffness()
                 % Find the energy to max force
-                IA.CalcEnergy
+                IA.CalcEnergy()
                 % Find the gauge strain at max force using a median filter
                 % radius of 2 (the default)
                 IA.CalcStrainAtMaxGauge(2)
@@ -384,17 +382,17 @@ classdef InstronAnalysis < Specimen
                 end
                 
                 % first read in the DIC data file
-                IA.GetDICDataClass.ReadDataFile
+                IA.GetDICDataClass.ReadDataFile()
                 % next interpolate the data to the common time vector
-                IA.InterpolateDICToCommonTime
+                IA.InterpolateDICToCommonTime()
                 % calculate the error
-                IA.CalcStrainError
+                IA.CalcStrainError()
                 % calculate the mean error
-                IA.CalcStrainErrorMean
+                IA.CalcStrainErrorMean()
                 % calculate the error standard deviation
-                IA.CalcStrainErrorStdev
+                IA.CalcStrainErrorStdev()
                 % determine the frame at which the max force occured
-                IA.CalcFrameAtMax
+                IA.CalcFrameAtMax()
                 % calculate the strain from the DIC at the max force using
                 % a median filter radius of 2 (the default)
                 IA.CalcStrainAtMaxDIC(2)
