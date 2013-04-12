@@ -21,6 +21,7 @@ classdef InstronAnalysis < Specimen
         m_strainGaugeP1;
         m_strainGaugeP2;
         m_strainGaugePhi;
+        m_strainDIC;
         
         % results members from analysis
         m_stiffness;        % in kN/mm
@@ -42,10 +43,10 @@ classdef InstronAnalysis < Specimen
             % name, dxa, op and data are inherited from "Specimen.m". See
             % Specimen.m for details.
             IA = IA@Specimen(name,dxa,op,data);
-            if data(1)
+            if data.InstronDAQ
                 IA.m_daq = DAQInstron(name,dxa,op,data);
             end
-            if data(2)
+            if data.InstronDIC
                 IA.m_dicData = DICData(name,dxa,op,data);
             end
         end
@@ -315,7 +316,7 @@ classdef InstronAnalysis < Specimen
                 
         function AnalyzeInstronData(IA)
             % Check if DAQ analysis will be done
-            if IA.m_daq
+            if ~isempty(IA.m_daq)
                 % Warnings will be issued so that you get a list of all
                 % data errors, then this will be used as a flag to stop
                 % execution at the end of the integrety check
@@ -363,7 +364,7 @@ classdef InstronAnalysis < Specimen
                 IA.CalcStrainAtMaxGauge(2)
             end
             
-            if IA.m_instronDIC && IA.m_instronDAQ % requires both DIC and DAQ data for analysis
+            if ~isempty(IA.m_dicData) % check for DIC data
                 errorFlag = 0;
                 if ~ischar(IA.GetDICDataClass.GetFileName)
                    warning('InstronAnalysis:FileNameDIC','This error is fatal. No DIC file name for specimen %s was provided before calling AnalyzeInstronData.\n',IA.m_specimenName);

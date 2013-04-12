@@ -4,24 +4,21 @@ classdef Specimen < handle
         m_specimenName;
         m_dxa;
         m_opStatus;
+        m_dataAvailable;
         % these are bools to say if the data is available
-        m_instronDAQ;
-        m_instronDIC;
-        m_dtDAQ;
-        m_dtDisplacement;
-        m_dtDIC;
     end
     methods
         function SP = Specimen(name,dxa,op,data)
             % The constructor takes the name, DXA values the osteoporosis
             % status and the available data as inputs.
             % name is a string
-            % dxa is a structure with elements:
+            % dxa is a structure with fields:
             %      'neck','troch','inter','total','wards'
             % op is one of:
             %      'normal','osteopenia','osteoporosis'
-            % data is a vector of bools in the following order:
-            % [InstronDAQ,InstronDIC,DropTowerDAQ,DropTowerDisplacement,DropTowerDIC]
+            % data is a structure of bools indicating what data with 
+            % is available. It is comprised of the fields:
+            %      'InstronDAQ','InstronDIC','DropTowerDAQ','DropTowerDisplacement','DropTowerDIC'
             %
             % Sp = Specimen([SpecimenName],[DXAValues],[OPStatus])
             SP.SetSpecimenName(name);
@@ -42,29 +39,22 @@ classdef Specimen < handle
         function SetDxa(SP,dxa)
             if (~isfield(dxa,'neck') || ~isfield(dxa,'troch') || ~isfield(dxa,'inter') || ~isfield(dxa,'total') || ~isfield(dxa,'wards') )
                 error('Specimen:dxaFault','Malformed DXA structure. Please check the DXA data for %s and retry. Aborting.\n',SP.m_specimenName);
-            else
-                SP.m_dxa = dxa;
             end
+                SP.m_dxa = dxa;
         end
         
         function SetOp(SP,op)
             if (~strcmp(op,'normal') && ~strcmp(op,'osteopenia') && ~strcmp(op,'osteoporosis') )
                 error('Specimen:opFault','Invalid osteoporosis state specified. Please check the value for %s and retry. Aborting.\n',SP.m_specimenName);
-            else
-                SP.m_opStatus = op;
             end
+                SP.m_opStatus = op;
         end
         
         function SetData(SP,data)
-            if length(data) ~= 5
-                error('Specimen:dataFault','Malformed data available vector for %s. Please check the values and retry. Aborting, Type Ctrl+c to continue.\n',SP.m_specimenName);
-            else
-                SP.m_instronDAQ     = data(1);
-                SP.m_instronDIC     = data(2);
-                SP.m_dtDAQ          = data(3);
-                SP.m_dtDisplacement = data(4);
-                SP.m_dtDIC          = data(5);
+            if ( ~isfield(data,'InstronDAQ') || ~isfield(data,'InstronDIC') || ~isfield(data,'DropTowerDAQ') || ~isfield(data,'DropTowerDisplacement') || ~isfield(data,'DropTowerDIC') )
+                error('Specimen:dataFault','Malformed data available structure. Please check the values for %s and retry.\n',SP.m_specimenName);
             end
+                SP.m_dataAvailable  = data;
         end
         
         % get functions for each property

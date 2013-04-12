@@ -1,5 +1,5 @@
 classdef DAQInstron < Specimen
-    properties (SetAccess = Private)
+    properties (SetAccess = private)
         m_forceDAQVoltage;
         m_forceDAQ;
         m_displacementDAQVoltage;
@@ -35,13 +35,19 @@ classdef DAQInstron < Specimen
     methods
         % constructor
         function DI = DAQInstron(name,dxa,op,data)
-            DI = DI@Specimen(name,dxa,op,data)
+            DI = DI@Specimen(name,dxa,op,data);
+            DI.m_sampleRate = 0;
+            DI.m_samplePeriod = 0;
+            DI.m_filterCutoff = 0;
+            DI.m_gainDisplacement = 0;
+            DI.m_gainLoad = 0;
+            DI.m_fileNameDAQ = '';
         end
         
         % function to set the file name
         function SetFileName(DI,file)
-            if DI.m_fileNameDAQ ~= file
-                if ~exists(file,'file')
+            if ~strcmp(DI.m_fileNameDAQ,file)
+                if ~exist(file,'file')
                     error('DAQInstron:DataAvailability','The specified instron DAQ file for %s does not exist.\n',DI.m_specimenName);
                 end
                 DI.m_fileNameDAQ = file;
@@ -115,26 +121,31 @@ classdef DAQInstron < Specimen
             end
             % read the file
             instron = importdata(DI.m_fileNameDAQ,',');
+            % if there was a file header, the result would be a strcut. We
+            % want only the data.
+            if isstruct(instron)
+                instron = instron.data;
+            end
             % put the raw data into the correct vectors
-            DI.m_timeDAQ = instron.data(:,1);
-            DI.m_forceDAQ = instron.data(:,6);
-            DI.m_displacementDAQ = instron.data(:,5);
-            DI.m_triggerDAQ = instron.data(:,7);
-            DI.m_strainGauge1DAQ = instron.data(:,2);
-            DI.m_strainGauge2DAQ = instron.data(:,3);
-            DI.m_strainGauge3DAQ = instron.data(:,4);
+            DI.m_timeDAQ = instron(:,1);
+            DI.m_forceDAQVoltage = instron(:,6);
+            DI.m_displacementDAQVoltage = instron(:,5);
+            DI.m_triggerDAQ = instron(:,7);
+            DI.m_strainGauge1DAQ = instron(:,2);
+            DI.m_strainGauge2DAQ = instron(:,3);
+            DI.m_strainGauge3DAQ = instron(:,4);
         end
         
         % function to apply the displacement gain
         function ApplyGainDisplacement(DI)
-            if isempty(DI.m_gainDisplacement)
+            if ~DI.m_gainDisplacement
                 error('InstronDAQ:DataAvailability','Apply displacement gain for %s was attempted when no gain was set.\n',DI.m_specimenName);
             end
             DI.m_displacementDAQ = DI.m_displacementDAQVoltage * DI.m_gainDisplacement;
         end
         
         function ApplyGainLoad(DI)
-            if isempty(DI.m_gainLoad)
+            if ~DI.m_gainLoad
                 error('InstronDAQ:DataAvailability','Apply laod gain for %s was attempted when no gain was set.\n',DI.m_specimenName);
             end
             DI.m_forceDAQ = DI.m_forceDAQVoltage * DI.m_gainLoad;
@@ -142,7 +153,7 @@ classdef DAQInstron < Specimen
         
         % function to filter the instron data
         function CalcFilteredData(DI)
-            if ( isempty(DI.m_sampleRate) || isempty(DI.m_filterCutoff) || isempty(DI.m_filterOrder) )
+            if ( ~DI.m_sampleRate || ~DI.m_filterCutoff || ~DI.m_filterOrder )
                 error('InstronDAQ:DataAvailability','Filtering was requested for %s when either sample rate, filter cutoff, or filter order had not been specified.\n',DI.m_specimenName);
             end
             % design the filter
@@ -175,7 +186,7 @@ classdef DAQInstron < Specimen
             eB = DI.m_strainGauge2;
             eC = DI.m_strainGauge3;
             DI.m_strainGaugeP1 = (eA+eC)./2+1/2.*sqrt((eA-eC).^2+(2.*eB-eA-eC).^2);
-            DI.m_strainGaugeP2 =  eA+eC)./2-1/2.*sqrt((eA-eC).^2+(2.*eB-eA-eC).^2);
+            DI.m_strainGaugeP2 =  (eA+eC)./2-1/2.*sqrt((eA-eC).^2+(2.*eB-eA-eC).^2);
             DI.m_strainGaugePhi =  1/2.*atan((eA-2.*eB+eC)./(eA-eC));
         end
         
@@ -185,9 +196,12 @@ classdef DAQInstron < Specimen
                 error('InstronDAQ:DataAvailabiliyt','GetTime called for %s before the trigger data has been set.\nPerhapse call DAQInstron.CalcFilteredData()',DI.m_specimenName);
             end
             if isempty(DI.m_time)
-                DI.m_time = DI.m_timeDAQ - find(DI.m_trigger < 4.9,1,'first');
+                DI.ZeroTimeAtTrigger();
             end
             o = DI.m_time;
+        end
+        function ZeroTimeAtTrigger(DI)
+            DI.m_time = DI.m_timeDAQ - DI.m_timeDAQ(find(DI.m_triggerDAQ < 4.9,1,'first'));
         end
         
         % methods to get the raw data from the class
@@ -246,6 +260,45 @@ classdef DAQInstron < Specimen
         end
         function o = GetTrigger(DI)
             o = DI.m_trigger;
+        end
+        
+        function PrintSelf(DI)
+            fprintf(1,'%%%%%%%%%% DAQInstron Class Parameters %%%%%%%%%%\n');
+            fprintf(1,'Specimen name: %s\n',DI.m_specimenName);
+            fprintf(1,'Specimen DXA values (g/cm^2):\n\tNeck:  %f\n\tTroch: %f\n\tInter: %f\n\tTotal: %f\n\tWards: %f\n',DI.m_dxa.neck,DI.m_dxa.troch,DI.m_dxa.inter,DI.m_dxa.total,DI.m_dxa.wards);
+            fprintf(1,'Specimen osteoporosis state: %s\n',DI.m_opStatus);
+            fprintf(1,'Specimen data fields available:\n\tInstronDAQ:            %d\n\tInstronDIC:            %d\n\tDropTowerDAQ:          %d\n\tDropTowerDisplacement: %d\n\tDropTowerDIC:          %d\n',DI.m_dataAvailable.InstronDAQ,DI.m_dataAvailable.InstronDIC,DI.m_dataAvailable.DropTowerDAQ,DI.m_dataAvailable.DropTowerDisplacement,DI.m_dataAvailable.DropTowerDIC);
+            fprintf(1,'DAQ file name: %s\n',DI.m_fileNameDAQ);
+            fprintf(1,'DAQ sample rate: %f Hz\n',DI.m_sampleRate);
+            fprintf(1,'DAQ sample period: %f seconds\n',DI.m_samplePeriod);
+            fprintf(1,'DAQ filter cutoff frequency: %f Hz\n',DI.m_filterCutoff);
+            fprintf(1,'DAQ filter order: %d\n',DI.m_filterOrder);
+            fprintf(1,'Instron displacement gain %f mm/V\n',DI.m_gainDisplacement);
+            fprintf(1,'Instron load gain %f N/V\n',DI.m_gainLoad);
+            
+            fprintf(1,'\n  %%%% Raw input data %%%%  \n');
+            fprintf(1,'DAQ force voltage: [%d,%d] in volts\n',size(DI.m_forceDAQVoltage));
+            fprintf(1,'DAQ force raw: [%d,%d] in newtons\n',size(DI.m_forceDAQ));
+            fprintf(1,'DAQ displacement voltage: [%d,%d] in volts\n',size(DI.m_displacementDAQVoltage));
+            fprintf(1,'DAQ displacement raw: [%d,%d] in mm\n',size(DI.m_displacementDAQ));
+            fprintf(1,'DAQ strain gauge 1 raw: [%d,%d] in strain\n',size(DI.m_strainGauge1DAQ));
+            fprintf(1,'DAQ strain gauge 2 raw: [%d,%d] in strain\n',size(DI.m_strainGauge2DAQ));
+            fprintf(1,'DAQ strain gauge 3 raw: [%d,%d] in strain\n',size(DI.m_strainGauge3DAQ));
+            fprintf(1,'DAQ trigger raw: [%d,%d] in volts\n',size(DI.m_triggerDAQ) );
+            fprintf(1,'DAQ time raw: [%d,%d] in seconds\n',size(DI.m_timeDAQ) );
+            
+            fprintf(1,'\n  %%%% Analyzed data %%%%  \n');
+            fprintf(1,'DAQ force: [%d,%d] in newtons\n',size(DI.m_force));
+            fprintf(1,'DAQ displacement: [%d,%d] in mm\n',size(DI.m_displacement));
+            fprintf(1,'DAQ strain gauge 1: [%d,%d] in strain\n',size(DI.m_strainGauge1));
+            fprintf(1,'DAQ strain gauge 2: [%d,%d] in strain\n',size(DI.m_strainGauge2));
+            fprintf(1,'DAQ strain gauge 3: [%d,%d] in strain\n',size(DI.m_strainGauge3));
+            fprintf(1,'DAQ principal strain 1: [%d,%d] in strain\n',size(DI.m_strainGaugeP1));
+            fprintf(1,'DAQ principal strain 2: [%d,%d] in strain\n',size(DI.m_strainGaugeP2));
+            fprintf(1,'DAQ principal strain angle: [%d,%d] in radians\n',size(DI.m_strainGaugePhi));
+            fprintf(1,'DAQ trigger: [%d,%d] in volts\n',size(DI.m_trigger));
+            fprintf(1,'DAQ time: [%d,%d] in seconds\n\n',size(DI.m_time));
+          
         end
         
     end % methods

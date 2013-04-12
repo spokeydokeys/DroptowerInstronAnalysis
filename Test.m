@@ -3,43 +3,50 @@ clc
 clear all
 close all
 
-
 name = 'H1376L';
 dxa = struct('neck',0.552,'troch',.550,'inter',.812,'total',.683,'wards',.333);
 op = 'osteopenia';
-data = [1 1 1 1 1];
+data = struct('InstronDAQ',1,'InstronDIC',1,'DropTowerDAQ',1,'DropTowerDisplacement',1,'DropTowerDIC',1);
 
 % Create the data class
 testInstronClass = InstronAnalysis(name,dxa,op,data);
+
+%%  DAQ
+
 % read in the DAQ data file
-testInstronClass.SetFileNameDAQ('/media/BigToaster/Seth Project Data/12-018 Testing!/H1376L/SignalAsciiData/Ins_H1376L_Processed_filtfilt.mat')
-testInstronClass.ReadDAQFile
+testInstronClass.GetDAQDataClass.SetFileName('/media/BigToaster/Seth Project Data/12-018 Testing!/H1376L/SignalAsciiData/Ins_H1376L.csv')
+testInstronClass.GetDAQDataClass.ReadFile();
+
+% setup the DAQ parameters
+testInstronClass.GetDAQDataClass.SetSampleRate(20000);
+testInstronClass.GetDAQDataClass.SetFilterCutoff(500);
+testInstronClass.GetDAQDataClass.SetGainDisplacement(.3);
+testInstronClass.GetDAQDataClass.SetGainLoad(1000);
+
+% apply gains to the load and displacement data
+testInstronClass.GetDAQDataClass.ApplyGainDisplacement();
+testInstronClass.GetDAQDataClass.ApplyGainLoad();
+
+% filter the data and set time to start at trigger
+testInstronClass.GetDAQDataClass.CalcFilteredData();
+testInstronClass.GetDAQDataClass.CalcPrincipalStrains();
+testInstronClass.GetDAQDataClass.ZeroTimeAtTrigger();
+
+% print the class
+testInstronClass.GetDAQDataClass.PrintSelf();
+
+
+%%  DIC 
+
 % read in the DIC data file
 testInstronClass.GetDICDataClass.SetFileName('/media/BigToaster/Seth Project Data/12-018 Testing!/H1376L/InsDIC/MinPStrain_accurate/B00001.txt')
-testInstronClass.GetDICDataClass.ReadDataFile
-
-% setup the machine parameters
-testInstronClass.SetInstronCompliance(1/30000);
+testInstronClass.GetDICDataClass.ReadDataFile();
 
 % setup the DIC paramters
 testInstronClass.GetDICDataClass.SetSampleRate(100)
 testInstronClass.GetDICDataClass.SetStartTime(0.2)
 
-testInstronClass.AnalyzeInstronData
+testInstronClass.AnalyzeInstronData();
 
-% 
-% % correct the time to zero when the trigger is detected
-% testInstronClass.ZeroDAQTimeAtTrigger
-% 
-% % interpolate the data to a common time
-% testInstronClass.InterpolateDAQToCommonTime
-% 
-% % compute the stiffness
-% testInstronClass.CalcStiffness
-% % compute the energy
-% testInstronClass.CalcEnergy
-% % compute the
-% 
-% % compute the strains
-% testInstronClass.CalcStrainAtMaxGauge
+
 
