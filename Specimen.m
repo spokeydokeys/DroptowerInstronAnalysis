@@ -69,21 +69,21 @@ classdef Specimen < handle
         end
         
         function SetHeight(SP,height)
-            if (~isnumeric(age))
+            if (~isnumeric(height))
                 error('Specimen:heightFault','A non-numeric height was specified for %s.\n',SP.m_specimenName);
             end
             SP.m_height = height;
         end
         
         function SetWeight(SP,weight)
-            if(~isnumeric(age))
+            if(~isnumeric(weight))
                 error('Specimen:weightFault','A non-numeric weight was specified for %s.\n',SP.m_specimenName);
             end
             SP.m_weight = weight;
         end
         
         function SetGender(SP,gender)
-            if (~strcmp(gender,'m') || ~ strcmp(gender,'f'))
+            if (~strcmp(gender,'m') && ~strcmp(gender,'f'))
                 error('Specimen:genderFault','An invalid gender was supplied for %s.\n',SP.m_specimenName);
             end
             SP.m_gender = gender;

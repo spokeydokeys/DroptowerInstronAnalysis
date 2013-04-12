@@ -59,7 +59,7 @@ classdef InstronAnalysis < handle
         end
         
         % function to get the DIC data class
-        function o = GetDICDataClass(IA)
+        function o = GetDICData(IA)
             if isempty( IA.m_dicData )
                 error('InstronAnalysis:DataAvailable','The DIC data class memeber for instron analysis of %s was requested when no DIC data was available.\n',IA.GetSpecimen().GetSpecimenName())
             end
@@ -67,7 +67,7 @@ classdef InstronAnalysis < handle
         end
         
         % functio to get the DAQ data class
-        function o = GetDAQDataClass(IA)
+        function o = GetDAQData(IA)
             if isempty( IA.m_daqData )
                 error('InstronAnalysis:DataAvailable','The DAQ data class memeber for instron analysis of %s was requested when no DAQ data was available.\n',IA.GetSpecimen().GetSpecimenName())
             end            
@@ -86,26 +86,26 @@ classdef InstronAnalysis < handle
             if isempty(IA.m_time)
                 IA.CreateCommonTimeVector()
             end
-            IA.m_force = -interp1(IA.GetDAQDataClass.GetTime(), IA.GetDAQDataClass.GetForce(), IA.m_time); % negative to get compressive force
+            IA.m_force = -interp1(IA.GetDAQData.GetTime(), IA.GetDAQData.GetForce(), IA.m_time); % negative to get compressive force
             
-            IA.m_displacementTroch = -interp1(IA.GetDAQDataClass.GetTime(), IA.GetDAQDataClass.GetDisplacement(), IA.m_time);
+            IA.m_displacementTroch = -interp1(IA.GetDAQData.GetTime(), IA.GetDAQData.GetDisplacement(), IA.m_time);
             IA.m_displacementPlaten = IA.m_force.*IA.m_instronCompliance;
             IA.m_compression = IA.m_displacementTroch - IA.m_displacementPlaten;
                      
-            IA.m_strainGauge1 = interp1(IA.GetDAQDataClass.GetTime(), IA.GetDAQDataClass.GetStrainGauge1(), IA.m_time);
-            IA.m_strainGauge2 = interp1(IA.GetDAQDataClass.GetTime(), IA.GetDAQDataClass.GetStrainGauge2(), IA.m_time);
-            IA.m_strainGauge3 = interp1(IA.GetDAQDataClass.GetTime(), IA.GetDAQDataClass.GetStrainGauge3(), IA.m_time);
+            IA.m_strainGauge1 = interp1(IA.GetDAQData.GetTime(), IA.GetDAQData.GetStrainGauge1(), IA.m_time);
+            IA.m_strainGauge2 = interp1(IA.GetDAQData.GetTime(), IA.GetDAQData.GetStrainGauge2(), IA.m_time);
+            IA.m_strainGauge3 = interp1(IA.GetDAQData.GetTime(), IA.GetDAQData.GetStrainGauge3(), IA.m_time);
             
-            IA.m_strainGaugeP1 = interp1(IA.GetDAQDataClass.GetTime(), IA.GetDAQDataClass.GetPrincipalStrain1(), IA.m_time);
-            IA.m_strainGaugeP2 = interp1(IA.GetDAQDataClass.GetTime(), IA.GetDAQDataClass.GetPrincipalStrain2(), IA.m_time);
-            IA.m_strainGaugePhi = interp1(IA.GetDAQDataClass.GetTime(), IA.GetDAQDataClass.GetPrincipalStrainAngle(), IA.m_time);
+            IA.m_strainGaugeP1 = interp1(IA.GetDAQData.GetTime(), IA.GetDAQData.GetPrincipalStrain1(), IA.m_time);
+            IA.m_strainGaugeP2 = interp1(IA.GetDAQData.GetTime(), IA.GetDAQData.GetPrincipalStrain2(), IA.m_time);
+            IA.m_strainGaugePhi = interp1(IA.GetDAQData.GetTime(), IA.GetDAQData.GetPrincipalStrainAngle(), IA.m_time);
         end
         
         function InterpolateDICToCommonTime(IA)
             if isempty(IA.m_time)
                 IA.CreateCommonTimeVector()
             end
-            IA.m_strainDIC = interp1(IA.GetDICDataClass.GetTime(), IA.m_dicData.GetStrainData(), IA.m_time);
+            IA.m_strainDIC = interp1(IA.GetDICData.GetTime(), IA.m_dicData.GetStrainData(), IA.m_time);
         end
         
         % functions to get the interpolated data
@@ -257,10 +257,10 @@ classdef InstronAnalysis < handle
             if isempty(IA.m_timeForceMax)
                 error('InstronAnalysis:DataAvailability','DIC frame at max load for %s requested before time at max load has been set.\n',IA.GetSpecimen().GetSpecimenName());
             end
-            if isempty(IA.GetDICDataClass)
+            if isempty(IA.GetDICData)
                 error('InstronAnalysis:DataAvailability','DIC frame at max load for %s requested when no DIC data is available.\n',IA.GetSpecimen().GetSpecimenName());
             end
-            IA.m_frameAtMax = ( IA.m_timeForceMax - IA.GetDICDataClass.GetStartTime )*IA.GetDICDataClass.GetSampleRate;
+            IA.m_frameAtMax = ( IA.m_timeForceMax - IA.GetDICData.GetStartTime )*IA.GetDICData.GetSampleRate;
         end
         
         % function to get the strain error
@@ -334,23 +334,23 @@ classdef InstronAnalysis < handle
                 % execution at the end of the integrety check
                 errorFlag = 0; 
                 % now check that the data is available
-                if ~ischar( IA.GetDAQDataClass.GetFileName() )
+                if ~ischar( IA.GetDAQData.GetFileName() )
                     warning('InstronAnalysis:DataAvailability','This error is fatal. No DAQ file name for specimen %s was provided before calling AnalyzeInstronData.\n',IA.GetSpecimen().GetSpecimenName());
                     errorFlag = errorFlag + 1;
                 end
-                if isempty( IA.GetDAQDataClass.GetSampleRate() )
+                if isempty( IA.GetDAQData.GetSampleRate() )
                     warning('InstronAnalysis:DataAvailability','This error is fatal. The sample rate for the DAQ for sepcimen %s was not provided before calling AnalyzeInstronData.\n',IA.GetSpecimen().GetSpecimenName());
                     errorFlag = errorFlag + 1;
                 end
-                if isempty( IA.GetDAQDataClass.GetFilterCutoff() )
+                if isempty( IA.GetDAQData.GetFilterCutoff() )
                     warning('InstronAnalysis:DataAvailability','This error is fatal. The filter cutoff for DAQ filtering for sepcimen %s was not provided before calling AnalyzeInstronData.\n',IA.GetSpecimen().GetSpecimenName());
                     errorFlag = errorFlag + 1;
                 end
-                if isempty( IA.GetDAQDataClass.GetGainDisplacement() )
+                if isempty( IA.GetDAQData.GetGainDisplacement() )
                     warning('InstronAnalysis:DataAvailability','This error is fatal. The DAQ displacement gain for sepcimen %s was not provided before calling AnalyzeInstronData.\n',IA.GetSpecimen().GetSpecimenName());
                     errorFlag = errorFlag + 1;
                 end
-                if isempty( IA.GetDAQDataClass.GetGainLoad() )
+                if isempty( IA.GetDAQData.GetGainLoad() )
                     warning('InstronAnalysis:DataAvailability','This error is fatal. The DAQ load gain for sepcimen %s was not provided before calling AnalyzeInstronData.\n',IA.GetSpecimen().GetSpecimenName());
                     errorFlag = errorFlag + 1;
                 end
@@ -360,16 +360,16 @@ classdef InstronAnalysis < handle
                 end
                 
                 % first read in the DAQ data
-                IA.GetDAQDataClass.ReadFile()
+                IA.GetDAQData.ReadFile()
                 % apply the gains to the voltage signals
-                IA.GetDAQDataClass.ApplyGainDisplacement();
-                IA.GetDAQDataClass.ApplyGainLoad();
+                IA.GetDAQData.ApplyGainDisplacement();
+                IA.GetDAQData.ApplyGainLoad();
                 % filter the data
-                IA.GetDAQDataClass.CalcFilteredData();
+                IA.GetDAQData.CalcFilteredData();
                 % calculate principal strains
-                IA.GetDAQDataClass.CalcPrincipalStrains();
+                IA.GetDAQData.CalcPrincipalStrains();
                 % make sure the data is in experiment time, with t_0 = trigger time
-                IA.GetDAQDataClass.ZeroTimeAtTrigger();
+                IA.GetDAQData.ZeroTimeAtTrigger();
                    
                 % next put everything into the common time vector for the
                 % analysis. If there is DIC data it will also be
@@ -388,15 +388,15 @@ classdef InstronAnalysis < handle
             
             if ~isempty(IA.m_dicData) % check for DIC data
                 errorFlag = 0;
-                if ~ischar(IA.GetDICDataClass.GetFileName)
+                if ~ischar(IA.GetDICData.GetFileName)
                    warning('InstronAnalysis:FileNameDIC','This error is fatal. No DIC file name for specimen %s was provided before calling AnalyzeInstronData.\n',IA.GetSpecimen().GetSpecimenName());
                    errorFlag = errorFlag + 1;
                 end
-                if isempty(IA.GetDICDataClass.GetStartTime)
+                if isempty(IA.GetDICData.GetStartTime)
                     warning('InstronAnalysis:StartTimeDIC','This error is fatal. No DIC start time has been set for specimen %s. Without the start time the DIC data cannot be matched to the DAQ data.\n',IA.GetSpecimen().GetSpecimenName());
                     errorFlag = errorFlag + 1;
                 end
-                if isempty(IA.GetDICDataClass.GetSampleRate)
+                if isempty(IA.GetDICData.GetSampleRate)
                     warning('InstronAnalysis:SampleRateDIC','This error is fatal. No DIC sample rate has been set for specimen %s. Without this sample rate the DIC frame corresponding to max force cannot be found.\n',IA.GetSpecimen().GetSpecimenName());
                     errorFlag = errorFlag + 1;
                 end
@@ -405,7 +405,7 @@ classdef InstronAnalysis < handle
                 end
                 
                 % first read in the DIC data file
-                IA.GetDICDataClass.ReadDataFile()
+                IA.GetDICData.ReadDataFile()
                 
                 % next interpolate the data to the common time vector
                 IA.InterpolateDICToCommonTime()
@@ -460,10 +460,10 @@ classdef InstronAnalysis < handle
             fprintf(1,'Instron DIC-Guage strain error: [%d,%d] in strain\n',size(IA.m_strainError));
             
             if ~isempty(IA.m_daqData)
-                IA.GetDAQDataClass().PrintSelf();
+                IA.GetDAQData().PrintSelf();
             end
             if ~isempty(IA.m_dicData)
-                IA.GetDICDataClass().PrintSelf();
+                IA.GetDICData().PrintSelf();
             end
 
         end
