@@ -1,5 +1,7 @@
-classdef DAQInstron < Specimen
+classdef DAQInstron < handle
     properties (SetAccess = private)
+        m_specimen;
+        
         m_forceDAQVoltage;
         m_forceDAQ;
         m_displacementDAQVoltage;
@@ -34,8 +36,8 @@ classdef DAQInstron < Specimen
     
     methods
         % constructor
-        function DI = DAQInstron(name,dxa,op,data)
-            DI = DI@Specimen(name,dxa,op,data);
+        function DI = DAQInstron(specimen)
+            DI.m_specimen = specimen;
             DI.m_sampleRate = 0;
             DI.m_samplePeriod = 0;
             DI.m_filterCutoff = 0;
@@ -44,11 +46,15 @@ classdef DAQInstron < Specimen
             DI.m_fileNameDAQ = '';
         end
         
+        function o = GetSpecimen(DI)
+            o = DI.m_specimen;
+        end
+        
         % function to set the file name
         function SetFileName(DI,file)
             if ~strcmp(DI.m_fileNameDAQ,file)
                 if ~exist(file,'file')
-                    error('DAQInstron:DataAvailability','The specified instron DAQ file for %s does not exist.\n',DI.m_specimenName);
+                    error('DAQInstron:DataAvailability','The specified instron DAQ file for %s does not exist.\n',DI.GetSpecimen().GetSpecimenName());
                 end
                 DI.m_fileNameDAQ = file;
             end
@@ -88,7 +94,7 @@ classdef DAQInstron < Specimen
         function SetFilterOrder(DI,order)
             if DI.m_filterOrder ~= order
                 if mod(order,2)
-                    warning('InstronDAQ:DataValues','The filter order for %s was set to an odd number. Only even orders are accepted. The order is being increased by one.\n',DTDD.m_specimenName);
+                    warning('InstronDAQ:DataValues','The filter order for %s was set to an odd number. Only even orders are accepted. The order is being increased by one.\n',DI.GetSpecimen().GetSpecimenName());
                     order = order + 1;
                 end
                 DI.m_filterOrder = order;
@@ -117,7 +123,7 @@ classdef DAQInstron < Specimen
         % function to read the raw daq file
         function ReadFile(DI)
             if isempty(DI.m_fileNameDAQ)
-                error('InstronDAQ:DataAvailablity','File read was called for %s when no file name was set.\n',DI.m_specimenName);
+                error('InstronDAQ:DataAvailablity','File read was called for %s when no file name was set.\n',DI.GetSpecimen().GetSpecimenName());
             end
             % read the file
             instron = importdata(DI.m_fileNameDAQ,',');
@@ -139,14 +145,14 @@ classdef DAQInstron < Specimen
         % function to apply the displacement gain
         function ApplyGainDisplacement(DI)
             if ~DI.m_gainDisplacement
-                error('InstronDAQ:DataAvailability','Apply displacement gain for %s was attempted when no gain was set.\n',DI.m_specimenName);
+                error('InstronDAQ:DataAvailability','Apply displacement gain for %s was attempted when no gain was set.\n',DI.GetSpecimen().GetSpecimenName());
             end
             DI.m_displacementDAQ = DI.m_displacementDAQVoltage * DI.m_gainDisplacement;
         end
         
         function ApplyGainLoad(DI)
             if ~DI.m_gainLoad
-                error('InstronDAQ:DataAvailability','Apply laod gain for %s was attempted when no gain was set.\n',DI.m_specimenName);
+                error('InstronDAQ:DataAvailability','Apply laod gain for %s was attempted when no gain was set.\n',DI.GetSpecimen().GetSpecimenName());
             end
             DI.m_forceDAQ = DI.m_forceDAQVoltage * DI.m_gainLoad;
         end
@@ -154,7 +160,7 @@ classdef DAQInstron < Specimen
         % function to filter the instron data
         function CalcFilteredData(DI)
             if ( ~DI.m_sampleRate || ~DI.m_filterCutoff || ~DI.m_filterOrder )
-                error('InstronDAQ:DataAvailability','Filtering was requested for %s when either sample rate, filter cutoff, or filter order had not been specified.\n',DI.m_specimenName);
+                error('InstronDAQ:DataAvailability','Filtering was requested for %s when either sample rate, filter cutoff, or filter order had not been specified.\n',DI.GetSpecimen().GetSpecimenName());
             end
             % design the filter
             cutoffNormal = DI.m_filterCutoff/DI.m_sampleRate;
@@ -162,12 +168,12 @@ classdef DAQInstron < Specimen
             
             % filter the data
             if isempty(DI.m_forceDAQ)
-                warning('InstronDAQ:ExecutionOrder','Filtering of DAQ data was requested for %s before the force gain had been applied. Applying gain now.\n',DI.m_specimenName);
+                warning('InstronDAQ:ExecutionOrder','Filtering of DAQ data was requested for %s before the force gain had been applied. Applying gain now.\n',DI.GetSpecimen().GetSpecimenName());
                 DI.ApplyGainLoad;
             end
             DI.m_force          = filtfilt(b,a,DI.m_forceDAQ);
             if isempty(DI.m_displacementDAQ)
-                warning('InstronDAQ:ExecutionOrder','Filtering of DAQ data was requested for %s before the displcaement gain had been applied. Applying gain now.\n',DI.m_specimenName);
+                warning('InstronDAQ:ExecutionOrder','Filtering of DAQ data was requested for %s before the displcaement gain had been applied. Applying gain now.\n',DI.GetSpecimen().GetSpecimenName());
                 DI.ApplyGainDisplacement;
             end
             DI.m_displacement   = filtfilt(b,a,DI.m_displacementDAQ);
@@ -180,7 +186,7 @@ classdef DAQInstron < Specimen
         % function to calculate the principal strains
         function CalcPrincipalStrains(DI)
             if ( isempty(DI.m_strainGauge1) || isempty(DI.m_strainGauge2) || isempty(DI.m_strainGauge3) )
-                error('InstronDAQ:DataAvailability','Principal strains were requested for %s before all strain data was available.\nPerhapse you should call DAQInstron.CalcFilteredData()?',DI.m_specimenName);
+                error('InstronDAQ:DataAvailability','Principal strains were requested for %s before all strain data was available.\nPerhapse you should call DAQInstron.CalcFilteredData()?',DI.GetSpecimen().GetSpecimenName());
             end
             eA = DI.m_strainGauge1;
             eB = DI.m_strainGauge2;
@@ -193,7 +199,7 @@ classdef DAQInstron < Specimen
         % function to get the time with t=0 at the trigger
         function o = GetTime(DI)
             if isempty(DI.m_trigger)
-                error('InstronDAQ:DataAvailabiliyt','GetTime called for %s before the trigger data has been set.\nPerhapse call DAQInstron.CalcFilteredData()',DI.m_specimenName);
+                error('InstronDAQ:DataAvailabiliyt','GetTime called for %s before the trigger data has been set.\nPerhapse call DAQInstron.CalcFilteredData()',DI.GetSpecimen().GetSpecimenName());
             end
             if isempty(DI.m_time)
                 DI.ZeroTimeAtTrigger();
@@ -263,11 +269,8 @@ classdef DAQInstron < Specimen
         end
         
         function PrintSelf(DI)
-            fprintf(1,'%%%%%%%%%% DAQInstron Class Parameters %%%%%%%%%%\n');
-            fprintf(1,'Specimen name: %s\n',DI.m_specimenName);
-            fprintf(1,'Specimen DXA values (g/cm^2):\n\tNeck:  %f\n\tTroch: %f\n\tInter: %f\n\tTotal: %f\n\tWards: %f\n',DI.m_dxa.neck,DI.m_dxa.troch,DI.m_dxa.inter,DI.m_dxa.total,DI.m_dxa.wards);
-            fprintf(1,'Specimen osteoporosis state: %s\n',DI.m_opStatus);
-            fprintf(1,'Specimen data fields available:\n\tInstronDAQ:            %d\n\tInstronDIC:            %d\n\tDropTowerDAQ:          %d\n\tDropTowerDisplacement: %d\n\tDropTowerDIC:          %d\n',DI.m_dataAvailable.InstronDAQ,DI.m_dataAvailable.InstronDIC,DI.m_dataAvailable.DropTowerDAQ,DI.m_dataAvailable.DropTowerDisplacement,DI.m_dataAvailable.DropTowerDIC);
+            fprintf(1,'\n%%%%%%%%%% DAQInstron Class Parameters %%%%%%%%%%\n');
+            DI.GetSpecimen().PrintSelf();
             fprintf(1,'DAQ file name: %s\n',DI.m_fileNameDAQ);
             fprintf(1,'DAQ sample rate: %f Hz\n',DI.m_sampleRate);
             fprintf(1,'DAQ sample period: %f seconds\n',DI.m_samplePeriod);
