@@ -1,5 +1,5 @@
 classdef Specimen < handle
-    properties (SetAccess = private)
+    properties (SetAccess = private,Hidden = true)
         % immutables properties of each specimen
         m_specimenName;
         m_gender;
@@ -30,13 +30,13 @@ classdef Specimen < handle
             %
             % Sp = Specimen([SpecimenName],[age],[height],[weight],[DXAValues],[OPStatus])
             SP.SetSpecimenName(name);
-            SP.SetDxa(dxa);
-            SP.SetOp(op);
+            SP.SetDXA(dxa);
+            SP.SetOpStatus(op);
             SP.SetAge(age);
             SP.SetHeight(height);
             SP.SetWeight(weight);
             SP.SetGender(gender);
-            SP.SetData(data);
+            SP.SetDataAvailable(data);
         end
         
         function SetSpecimenName(SP,name)
@@ -47,14 +47,14 @@ classdef Specimen < handle
 
         end
         
-        function SetDxa(SP,dxa)
+        function SetDXA(SP,dxa)
             if (~isfield(dxa,'neck') || ~isfield(dxa,'troch') || ~isfield(dxa,'inter') || ~isfield(dxa,'total') || ~isfield(dxa,'wards') )
                 error('Specimen:dxaFault','Malformed DXA structure. Please check the DXA data for %s and retry. Aborting.\n',SP.m_specimenName);
             end
             SP.m_dxa = dxa;
         end
         
-        function SetOp(SP,op)
+        function SetOpStatus(SP,op)
             if (~strcmp(op,'normal') && ~strcmp(op,'osteopenia') && ~strcmp(op,'osteoporosis') )
                 error('Specimen:opFault','Invalid osteoporosis state specified. Please check the value for %s and retry. Aborting.\n',SP.m_specimenName);
             end
@@ -89,7 +89,7 @@ classdef Specimen < handle
             SP.m_gender = gender;
         end
         
-        function SetData(SP,data)
+        function SetDataAvailable(SP,data)
             if ( ~isfield(data,'InstronDAQ') || ~isfield(data,'InstronDIC') || ~isfield(data,'DropTowerDAQ') || ~isfield(data,'DropTowerDisplacement') || ~isfield(data,'DropTowerDIC') )
                 error('Specimen:dataFault','Malformed data available structure. Please check the values for %s and retry.\n',SP.m_specimenName);
             end

@@ -19,6 +19,7 @@ height = specimenData{4}(wantedIndex);
 weight = specimenData{5}(wantedIndex);
 dxa = struct('neck',specimenData{6}(wantedIndex),'troch',specimenData{7}(wantedIndex),'inter',specimenData{8}(wantedIndex),'total',specimenData{9}(wantedIndex),'wards',specimenData{10}(wantedIndex));
 op = specimenData{11}{wantedIndex};
+%data = struct('InstronDAQ',specimenData{12}(wantedIndex),'InstronDIC',specimenData{13}(wantedIndex),'DropTowerDAQ',specimenData{14}(wantedIndex),'DropTowerDisplacement',specimenData{15}(wantedIndex),'DropTowerDIC',specimenData{16}(wantedIndex));
 data = struct('InstronDAQ',specimenData{12}(wantedIndex),'InstronDIC',0,'DropTowerDAQ',specimenData{14}(wantedIndex),'DropTowerDisplacement',specimenData{15}(wantedIndex),'DropTowerDIC',specimenData{16}(wantedIndex));
 
 specimen = Specimen(name,gender,age,height,weight,dxa,op,data);

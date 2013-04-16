@@ -1,5 +1,5 @@
 classdef InstronAnalysis < handle
-    properties (SetAccess = private)
+    properties (SetAccess = private, Hidden = true)
         % members from the specimen
         m_specimen;
         % members from the DAQ equipment
@@ -329,47 +329,8 @@ classdef InstronAnalysis < handle
         function AnalyzeInstronData(IA)
             % Check if DAQ analysis will be done
             if ~isempty(IA.m_daqData)
-                % Warnings will be issued so that you get a list of all
-                % data errors, then this will be used as a flag to stop
-                % execution at the end of the integrety check
-                errorFlag = 0; 
-                % now check that the data is available
-                if ~ischar( IA.GetDAQData.GetFileName() )
-                    warning('InstronAnalysis:DataAvailability','This error is fatal. No DAQ file name for specimen %s was provided before calling AnalyzeInstronData.\n',IA.GetSpecimen().GetSpecimenName());
-                    errorFlag = errorFlag + 1;
-                end
-                if isempty( IA.GetDAQData.GetSampleRate() )
-                    warning('InstronAnalysis:DataAvailability','This error is fatal. The sample rate for the DAQ for sepcimen %s was not provided before calling AnalyzeInstronData.\n',IA.GetSpecimen().GetSpecimenName());
-                    errorFlag = errorFlag + 1;
-                end
-                if isempty( IA.GetDAQData.GetFilterCutoff() )
-                    warning('InstronAnalysis:DataAvailability','This error is fatal. The filter cutoff for DAQ filtering for sepcimen %s was not provided before calling AnalyzeInstronData.\n',IA.GetSpecimen().GetSpecimenName());
-                    errorFlag = errorFlag + 1;
-                end
-                if isempty( IA.GetDAQData.GetGainDisplacement() )
-                    warning('InstronAnalysis:DataAvailability','This error is fatal. The DAQ displacement gain for sepcimen %s was not provided before calling AnalyzeInstronData.\n',IA.GetSpecimen().GetSpecimenName());
-                    errorFlag = errorFlag + 1;
-                end
-                if isempty( IA.GetDAQData.GetGainLoad() )
-                    warning('InstronAnalysis:DataAvailability','This error is fatal. The DAQ load gain for sepcimen %s was not provided before calling AnalyzeInstronData.\n',IA.GetSpecimen().GetSpecimenName());
-                    errorFlag = errorFlag + 1;
-                end
-                
-                if errorFlag
-                    error('InstronAnalysis:AnalyzeDAQData','%d errors were detected when preparing to analyze the Instron DAQ data for specimen %s.\n',errorFlag,IA.GetSpecimen().GetSpecimenName());
-                end
-                
-                % first read in the DAQ data
-                IA.GetDAQData.ReadFile()
-                % apply the gains to the voltage signals
-                IA.GetDAQData.ApplyGainDisplacement();
-                IA.GetDAQData.ApplyGainLoad();
-                % filter the data
-                IA.GetDAQData.CalcFilteredData();
-                % calculate principal strains
-                IA.GetDAQData.CalcPrincipalStrains();
-                % make sure the data is in experiment time, with t_0 = trigger time
-                IA.GetDAQData.ZeroTimeAtTrigger();
+                % if there is a DAQ data object. Call its update function
+                IA.GetDAQData.Update();
                    
                 % next put everything into the common time vector for the
                 % analysis. If there is DIC data it will also be
@@ -461,9 +422,13 @@ classdef InstronAnalysis < handle
             
             if ~isempty(IA.m_daqData)
                 IA.GetDAQData().PrintSelf();
+            elseif isempty(IA.m_daqData)
+                fprintf(1,'\n%%%%%%%%%% No DAQ Data Available %%%%%%%%%%\n');
             end
             if ~isempty(IA.m_dicData)
                 IA.GetDICData().PrintSelf();
+            elseif isempty(IA.m_dicData)
+                fprintf(1,'\n%%%%%%%%%% No DIC Data Available %%%%%%%%%%\n');
             end
 
         end
