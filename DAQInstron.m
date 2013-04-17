@@ -346,7 +346,10 @@ classdef DAQInstron < handle
             o = DI.m_strainGaugeP2;
         end
         function o = GetPrincipalStrainAngle(DI)
-            % A function to get the principal strain angle in radians.
+            % A function to get the principal strain angle in radians
+            % from gauge A as defined in:
+            % Budynas R.G. Advanced Strength and Applied Stress 
+            % Analysis, Second ed. McGraw Hill. ISBN 0-07-008985-X
             %
             % Strain = DI.GetStrainGaugeAngle()
             %

@@ -115,13 +115,20 @@ classdef InstronAnalysis < handle
         function o = GetForce(IA)
             o = IA.m_force;
         end
-        function o = GetStrainP1(IA)
+        function o = GetPrincipalStrain1(IA)
             o = IA.m_strainGaugeP1;
         end
-        function o = GetStrainP2(IA)
+        function o = GetPrincipalStrain2(IA)
             o = IA.m_strainGaugeP2;
         end
-        function o = GetStrainPhi(IA)
+        function o = GetPricipalStrainAngle(IA)
+            % A function to ge the angel of the principal strain in rad
+            % from gauge A, as defined in:
+            % Budynas R.G. Advanced Strength and Applied Stress 
+            % Analysis, Second ed. McGraw Hill. ISBN 0-07-008985-X
+            %
+            % Angle = IA.GetPrincipalStrainAngle()
+            %
             o = IA.m_strainGaugePhi;
         end
         function o = GetStrainDIC(IA)

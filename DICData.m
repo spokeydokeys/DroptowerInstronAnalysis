@@ -4,16 +4,25 @@ classdef DICData < handle
         m_dicTime           % seconds
         m_dicStartTime      % seconds
         m_dicSampleRate     % Hz
-        m_dicDataFile       % string
+        m_dicDataFile = ''; % string
         m_specimenData      % the specimen data class
     end
     methods
         % Constructor function
         function DD = DICData(specimen)
+            % Constructor requires a reference specimen. See Specimen.m
+            % for details on creating a specimen.
+            %
+            % DD = DICData(specimen)
+            %
             DD.m_specimenData = specimen;
         end
         
         function SetFileName(DD,fileName)
+            % A function to set the name of the DIC data file.
+            %
+            % DD.SetFileName(file)
+            %
             while (~exist(fileName,'file'))
                 sprintf('The specified DIC data file does not exist\n');
                 fileName = input('Please enter a valid file location: ');
@@ -21,44 +30,88 @@ classdef DICData < handle
             DD.m_dicDataFile = fileName;
         end
         function o = GetFileName(DD)
+            % A function to get the name of the DIC data file
+            %
+            % File = DD.GetFileName()
+            %
             o = DD.m_dicDataFile;
         end
         
         function SetStartTime(DD,startTime)
+            % A function to set the time of the first data point in the
+            % DIC data in seconds. Time in the input file starts from
+            % zero, in some cases this my not be coincident with the
+            % trigger. This value is used to align the data with the
+            % experiment time.
+            %
+            % DD.SetStartTime(time)
+            %
              DD.m_dicStartTime = startTime; % must be supplied by user
         end
         
         function SetSampleRate(DD,rate)
+            % A function to set the data frequency of the DIC in Hz.
+            %
+            % DD.SetSampleRate(rate)
+            %
             DD.m_dicSampleRate = rate;
         end
         function o = GetSampleRate(DD)
+            % A function to get the sample rate of the DIC data in Hz.
+            %
+            % Rate = DD.GetSampleRate()
+            %
             o = DD.m_dicSampleRate;
         end
         
         function o = GetSpecimen(DD)
+            % A function to return the specimen object associated with 
+            % the DIC data.
+            %
+            % Specimen = DD.GetSpecimen()
+            %
             o = DD.m_specimenData;
         end
-        
-        % functions to get the data vector
+
         function o = GetStrainData(DD)
+            % A function to get the DIC strain data vector read in from
+            % the input file. In the same units provided in the input
+            % file. Should be percent minimum principal strain.
+            %
+            % Strain = DD.GetStrainData()
+            %
             o =  DD.m_dicData;
         end
         
-        % functions to get the time post m_dicStartTime
         function o = GetDICTime(DD)
+            % A function to get the DIC time in seconds. This time may
+            % not be aligned with the experiment time. The offset is
+            % set/get using DD.SetStartTime(time) and DD.GetStartTime()
+            %
+            % Time = DD.GetDICTime()
+            %
             o = DD.m_dicTime;
         end
         
-        % a function to get the DIC time in the experiment time
         function o = GetTime(DD)
+            % A function to get the DIC time in seconds, aligned with the
+            % experimental time. If the DIC start time has not been set
+            % using SetStartTime(time) a warning will be issued.
+            %
+            % Time = DD.GetTime()
+            %
             if isempty(DD.m_dicStartTime)
                 warning('DICData:DataAvailable','Warning! There is no start time for the DIC.\nTime will not be referenced to the rest of the experiment.\n');
             end
             o = DD.m_dicTime + DD.m_dicStartTime;
         end
             
-        % functions to get the experiment time of the start of the DIC data.
         function o = GetStartTime(DD)
+            % A function to get the time of the first DIC data point in
+            % seconds.
+            %
+            % Time = DD.GetStartTime()
+            %
             o = DD.m_dicStartTime;
         end
         
@@ -67,10 +120,16 @@ classdef DICData < handle
             % Strain must be percent minimum principal strain for this 
             % class to integrate properly with the rest of the analysis
             %
-            % set the file name using DICData.SetFileName(file)
+            % DD.ReadDataFile()
             %
-            %
+            if strcmp(DD.GetFileName(),'')
+                error('DICData:DataAvailable','The DIC ReadDataFile() method was called for % before a file name was set.\n',DD.GetSpecimen().GetSpcimenName());
+            end
             inFid = fopen(DD.m_dicDataFile,'r');
+            if inFid == -1
+                fclose(inFid);
+                error('DICData:ReadError','The DIC data file specified for %s does not exist. Please check the file name and try again.\n',DD.GetSpecimen().GetSpcimenName());
+            end
             cline = fgetl(inFid);           % skip headerline
             cline = fgetl(inFid);           % read in the y axis
             DD.m_dicData = str2num(cline)/100;  % convert to number and make % into strain
@@ -79,15 +138,21 @@ classdef DICData < handle
             fclose(inFid);
         end
         
-        % function to get the strain at a certain experiment time
         function o = GetStrainAtTime(DD,time)
+            % A function to get the strain at a experimental time in seconds.
+            %
+            % Strain = DD.GetStrainAtTime(time)
+            %
             dicTime = time - DD.m_dicStartTime;
             index = find(DD.m_dicTime > dicTime,1,'first');
             o = DD.m_dicData(index);
         end
         
-        % function to print out the state of the class
         function PrintSelf(DD)
+            % A function to print out the state of the DIC data object.
+            %
+            % DD.PrintSelf()
+            %
             fprintf(1,'\n%%%%%%%%%% DICData Class Parameters %%%%%%%%%%\n');
             DD.GetSpecimen().PrintSelf();
             fprintf(1,'DIC file name: sf\n',DD.m_dicDataFile);

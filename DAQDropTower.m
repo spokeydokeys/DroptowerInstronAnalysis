@@ -330,7 +330,9 @@ classdef DAQDropTower < handle
         end
         function o = GetPrincipalStrainAngle(DD)
             % A function to get the principal strain angle. Returns the
-            % angle in radians.
+            % angle in radians from gauge A as defined in Appendix G of:
+            % Budynas R.G. Advanced Strength and Applied Stress 
+            % Analysis, Second ed. McGraw Hill. ISBN 0-07-008985-X
             %
             % Angle = DD.GetPrincipalStrainAngle()
             %
