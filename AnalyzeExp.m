@@ -9,10 +9,10 @@ specimenFID = fopen(specimenFileName,'r');
 specimenData = textscan(specimenFID,'%s %s %f %f %f %f %f %f %f %f %s %d %d %d %d %d','headerlines',1,'delimiter',',');
 fclose(specimenFID);
 
-% wantedName= 'H1366R';
+% wantedName= 'H1377R';
 % wantedIndex = find(strcmp(specimenData{1},wantedName));
 
-for wantedIndex = 1:1
+for wantedIndex = 1:length(specimenData{1})
     name = specimenData{1}{wantedIndex};
     gender = specimenData{2}{wantedIndex};
     age = specimenData{3}(wantedIndex);
@@ -21,7 +21,6 @@ for wantedIndex = 1:1
     dxa = struct('neck',specimenData{6}(wantedIndex),'troch',specimenData{7}(wantedIndex),'inter',specimenData{8}(wantedIndex),'total',specimenData{9}(wantedIndex),'wards',specimenData{10}(wantedIndex));
     op = specimenData{11}{wantedIndex};
     data = struct('InstronDAQ',specimenData{12}(wantedIndex),'InstronDIC',specimenData{13}(wantedIndex),'DropTowerDAQ',specimenData{14}(wantedIndex),'DropTowerDisplacement',specimenData{15}(wantedIndex),'DropTowerDIC',specimenData{16}(wantedIndex));
-    % data = struct('InstronDAQ',specimenData{12}(wantedIndex),'InstronDIC',0,'DropTowerDAQ',specimenData{14}(wantedIndex),'DropTowerDisplacement',specimenData{15}(wantedIndex),'DropTowerDIC',0);
 
     specimen = Specimen(name,gender,age,height,weight,dxa,op,data);
 
@@ -122,30 +121,3 @@ for wantedIndex = 1:1
     
     save(['~/Desktop/' exp.GetSpecimen().GetSpecimenName() '.mat'],'exp');
 end
-
-
-
-%% Some test stuff
-close all
-
-dtTime = dropTowerAnalysis.GetTime;
-dtForce = dropTowerAnalysis.GetForceSix;
-dtTroch = dropTowerAnalysis.GetDisplacementTroch;
-dtComp = dropTowerAnalysis.GetCompression;
-startIdx = dropTowerAnalysis.GetIndexImpactStart;
-finishIdx = dropTowerAnalysis.GetIndexImpactFinish;
-maxIdx = dropTowerAnalysis.GetIndexForceMax;
-
-energyInstron = dropTowerAnalysis.GetEnergyToForceInstronMax
-energyMax = dropTowerAnalysis.GetEnergyToForceMax
-energyTotal = dropTowerAnalysis.GetEnergyToImpactFinish
-
-figure(1)
-plot(dtTime,dtForce(:,3))
-hold;
-plot(dtTime([startIdx,maxIdx,finishIdx]),dtForce([startIdx,maxIdx,finishIdx],3),'ro','markersize',10)
-
-figure(2)
-plot(dtComp,dtForce(:,3))
-hold;
-plot(dtComp([startIdx,maxIdx,finishIdx]),dtForce([startIdx,maxIdx,finishIdx],3),'ro','markersize',10)

@@ -879,7 +879,7 @@ classdef DropTowerAnalysis < handle
             % than the max after the linear portion of the impact, the user
             % must help identify the max force. This function will open a
             % plot and the user should click near the true max force, the
-            % fucntion will take a window 5 ms wide and find the max in
+            % fucntion will take a window .5 ms wide and find the max in
             % that window.
             % 
             % DA.CalcForceMax()
@@ -901,8 +901,8 @@ classdef DropTowerAnalysis < handle
             % select the approx max
             [x,~] = ginput(1);
             % find the actual max within 2.5 ms of the approx        
-            nIndexes = .005*DA.GetCommonTimeRate();
-            range = find(time > (x-.0025),nIndexes,'first');
+            nIndexes = .0005*DA.GetCommonTimeRate();
+            range = find(time > (x-.00025),nIndexes,'first');
             [rangeVM,rangeIM] = max(forceSix(range,3));
             close(maxForcePlotH)
             
