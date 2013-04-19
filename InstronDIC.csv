@@ -1,0 +1,25 @@
+name,sample rate,start time,file name
+H1167L,100,3.80249,none
+H1168R,100,0.000857,/media/seth/Test_Data/H1168R/InsDIC/MinPStrain_Accurate/B00001.txt
+H1260R,100,0.000037,/media/seth/Test_Data/H1260R/InsDIC/MinPStrain_accurate/B00001.txt
+H1261R,0,0,none
+H1262R,0,0,none
+H1264L,0,0,none
+H1266L,100,0.007995,/media/seth/Test_Data/H1266L/InsDIC/MinPStrain_accurate/B00001.txt
+H1267R,50,0.17281,/media/seth/Test_Data/H1267R_2nd/InsDIC/MinPStrain_accurate/B00001.txt
+H1268L,100,1.004207,/media/seth/Test_Data/H1268L/InsDIC/MinPStrain/B00001.txt
+H1365R,100,0.00503,/media/seth/Test_Data/H1365R/InsDIC/MinPStrain_Accurate/B00001.txt
+H1366R,100,0.005928,/media/seth/Test_Data/H1366R/InsDIC/H1366R_MinPStrain_5x5x5_MedianFilt/B00001.txt
+H1367R,100,0.864784,/media/seth/Test_Data/H1367R/InsDIC/MinPStrain_accurate/B00001.txt
+H1368R,100,0.003096,/media/seth/Test_Data/H1368R/InsDIC/MinPStrain_Accurate/B00001.txt
+H1369L,10,1.004973,/media/seth/Test_Data/H1369L/InsDIC/MinPStrain_Rough_01/B00001.txt
+H1370R,100,0.862544,/media/seth/Test_Data/H1370R/InsDIC/MinPStrain_accurate/B00001.txt
+H1372R,100,0.005126,/media/seth/Test_Data/H1372R/InsDIC/MinPStrain_accurate/B00001.txt
+H1373R,100,0.868498,/media/seth/Test_Data/H1373R/InsDIC/MinPStrain_accurate/B00001.txt
+H1374R,100,0.863911,/media/seth/Test_Data/H1374R/InsDIC/MinPStrain_accurate/B00001.txt
+H1375L,100,0.095978,/media/seth/Test_Data/H1375L/InsDIC/MinPStrain_accurate/B00001.txt
+H1376L,100,0.00426,/media/seth/Test_Data/H1376L/InsDIC/MinPStrain_accurate/B00001.txt
+H1377R,100,0.869379,/media/seth/Test_Data/H1377R/InsDIC/MinPStrain_accurate/B00001.txt
+H1380R,100,0.006514,/media/seth/Test_Data/H1380R/InsDIC/MinPStrain_accurate/B00001.txt
+H1381R,100,0.002957,/media/seth/Test_Data/H1381R/InsDIC/MinPStrain_accurate/B00001.txt
+H1382L,100,0.002699,/media/seth/Test_Data/H1382L/InsDIC/MinPStrain_accurate/B00001.txt

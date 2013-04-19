@@ -1,0 +1,25 @@
+name,sample rate,filter cutoff,gain displacement,gain load,file name
+H1167L,20000,500,0.3,400,/media/seth/Test_Data/H1167L/SignalAsciiData/Ins_H1167L.csv
+H1168R,20000,500,0.35,400,/media/seth/Test_Data/H1168R/SignalAsciiData/Ins_H1168R.csv
+H1260R,20000,500,2,500,/media/seth/Test_Data/H1260R/SignalAsciiData/Ins_H1260R.csv
+H1261R,20000,500,5,500,/media/seth/Test_Data/H1261R/SignalAsciiData/Ins_H1261R.csv
+H1262R,20000,500,10,250,/media/seth/Test_Data/H1262R/SignalAsciiData/Ins_H1262R.csv
+H1264L,20000,500,10,1000,/media/seth/Test_Data/H1264L/SignalAsciiData/Ins_H1264L.csv
+H1266L,20000,500,0.25,325,/media/seth/Test_Data/H1266L/SignalAsciiData/Ins_H1266L.csv
+H1267R,20000,500,0.5,500,/media/seth/Test_Data/H1267R_2nd/SignalAsciiData/Ins_H1267R_2nd.csv
+H1268L,20000,500,0.5,400,/media/seth/Test_Data/H1268L/SignalAsciiData/Ins_H1268L.csv
+H1365R,20000,500,0.35,300,/media/seth/Test_Data/H1365R/SignalAsciiData/Ins_H1365R.csv
+H1366R,20000,500,0.35,500,/media/seth/Test_Data/H1366R/SignalAsciiData/Ins_H1366R.csv
+H1367R,20000,500,0.5,500,/media/seth/Test_Data/H1367R/SignalAsciiData/Ins_H1376R.csv
+H1368R,20000,500,0.35,300,/media/seth/Test_Data/H1368R/SignalAsciiData/Ins_H1368R.csv
+H1369L,20000,500,0.5,400,/media/seth/Test_Data/H1369L/SignalAsciiData/Ins_H1369L.csv
+H1370R,20000,500,0.5,500,/media/seth/Test_Data/H1370R/SignalAsciiData/Ins_H1370R.csv
+H1372R,20000,500,0.35,400,/media/seth/Test_Data/H1372R/SignalAsciiData/Ins_H1372R.csv
+H1373R,20000,500,0.35,700,/media/seth/Test_Data/H1373R/SignalAsciiData/Ins_H1373R.csv
+H1374R,20000,500,0.35,700,/media/seth/Test_Data/H1374R/SignalAsciiData/Ins_H1374R.csv
+H1375L,20000,500,0.3,400,/media/seth/Test_Data/H1375L/SignalAsciiData/Ins_H1375L.csv
+H1376L,20000,500,0.3,350,/media/seth/Test_Data/H1376L/SignalAsciiData/Ins_H1376L.csv
+H1377R,20000,500,0.35,700,/media/seth/Test_Data/H1377R/SignalAsciiData/Ins_H1377R.csv
+H1380R,20000,500,0.35,400,/media/seth/Test_Data/H1380R/SignalAsciiData/Ins_H1380R.csv
+H1381R,20000,500,0.35,250,/media/seth/Test_Data/H1381R/SignalAsciiData/Ins_H1381R.csv
+H1382L,20000,500,0.3,250,/media/seth/Test_Data/H1382L/SignalAsciiData/Ins_H1382L.csv
