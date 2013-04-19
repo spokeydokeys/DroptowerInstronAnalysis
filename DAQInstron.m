@@ -1,7 +1,9 @@
 classdef DAQInstron < handle
+    properties (SetAccess = private, Hidden = false)
+        m_specimen;    
+    end
+
     properties (SetAccess = private, Hidden = true)
-        m_specimen;
-        
         m_forceDAQVoltage;
         m_forceDAQ;
         m_displacementDAQVoltage;
@@ -468,7 +470,8 @@ classdef DAQInstron < handle
             if ~DI.m_gainDisplacement
                 error('InstronDAQ:DataAvailability','Apply displacement gain for %s was attempted when no gain was set.\n',DI.GetSpecimen().GetSpecimenName());
             end
-            DI.m_displacementDAQ = DI.m_displacementDAQVoltage * DI.m_gainDisplacement;
+            % apply gain and convert to m
+            DI.m_displacementDAQ = (DI.m_displacementDAQVoltage * DI.m_gainDisplacement)./1000;
         end
         
         function ApplyGainLoad(DI)

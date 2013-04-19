@@ -1,16 +1,20 @@
 classdef DTDisplacementData < handle
-    properties (SetAccess = private)
+    properties (SetAccess = private, Hidden = false)
+        m_specimen;
+    end
+    
+    properties (SetAccess = private, Hidden = true)
         m_displacementTroch;    % displacement of the trochanter
         m_displacementHammer;   % displacement of the impact hammer
         m_displacementTrochFilt;    % displacement of the trochanter, filtered
         m_displacementHammerFilt;   % displacement of the hammer, filtered
         m_timeDisplacement;     % time of the values in displacement camera time
-        m_timeStart;            % time of the first data point, experiment time
-        m_sampleRate;           % camera sample rate in Hz
+        m_time;
+        m_timeStart = 0;            % time of the first data point, experiment time
+        m_sampleRate = 0;           % camera sample rate in Hz
         m_filterCutoff = 500;   % filter cutoff frequency in Hz
         m_filterOrder = 2;      % butterworth filter order. Must be even, odd orders will be increased by 1
-        m_fileName;             % the raw TEMA data file
-        m_specimen;
+        m_fileName = '';             % the raw TEMA data file
     end % properties
     
     methods
@@ -39,8 +43,8 @@ classdef DTDisplacementData < handle
             %
             % DTDD.SetFileName(file)
             %
-            if file ~= DTDD.m_fileName
-                if ~exists(file,'file')
+            if ~strcmp(DTDD.m_fileName,file)
+                if ~exist(file,'file')
                     error('DropTowerDisplacement:DataAvailability','The specified displacement file for %s does not exist.\n',DTDD.GetSpecimen().GetSpecimenName());
                 end
                 DTDD.m_fileName = file;
@@ -110,12 +114,12 @@ classdef DTDisplacementData < handle
             data = importdata(DTDD.m_fileName,'\t');
             % find the shortest data filed
             validData = ~isnan(data.data);
-            startIndex = max(find(validData(:,1),1,'first'),find(validData(:,2),1,'first'),find(validData(:,3),1,'first'),find(validData(:,4),1,'first'),find(validData(:,5),1,'first'));
-            endIndex = min(  find(validData(:,1),1,'last'), find(validData(:,2),1,'last'), find(validData(:,3),1,'last'), find(validData(:,4),1,'last'), find(validData(:,6),1,'last') );                
+            startIndex = max([find(validData(:,1),1,'first'),find(validData(:,2),1,'first'),find(validData(:,3),1,'first'),find(validData(:,4),1,'first'),find(validData(:,5),1,'first')]);
+            endIndex = min(  [find(validData(:,1),1,'last'), find(validData(:,2),1,'last'), find(validData(:,3),1,'last'), find(validData(:,4),1,'last'), find(validData(:,5),1,'last')] );                
             
             % import the time data
             DTDD.m_timeDisplacement = data.data(startIndex:endIndex,1)./1000;
-            % import the impact hammer data
+            % import the impact hammer data and convert to m
             DTDD.m_displacementHammer = [data.data(startIndex:endIndex,2), data.data(startIndex:endIndex,3) ]./1000;
             DTDD.m_displacementTroch = [data.data(startIndex:endIndex,4), data.data(startIndex:endIndex,5) ]./1000;
         end
@@ -206,7 +210,7 @@ classdef DTDisplacementData < handle
                     error('DropTowerDisplacement:DataAvailability','Hammer displacement was requested for %s before displacement data was available.\n',DTDD.GetSpecimen().GetSpecimenName());
                 end
                 DTDD.CalcFilteredData();
-            end            
+            end
             o = DTDD.m_displacementHammerFilt;
         end
         
@@ -232,7 +236,10 @@ classdef DTDisplacementData < handle
             if isempty(DTDD.GetTimeStart())
                 warning('DropTowerDisplacement:DataAvailability','Time was requested for %s before start time was supplied. The time will not be referenced to the experiment.\n',DTDD.GetSpecimen().GetSpecimenName());
             end
-            o = DTDD.m_timeDisplacement - DTDD.GetTimeStart();
+            if isempty(DTDD.m_time)
+                DTDD.m_time = DTDD.GetTimeDisplacement() - DTDD.GetTimeStart();
+            end
+            o = DTDD.m_time;
         end
         
         function Update(DTDD)
@@ -259,6 +266,31 @@ classdef DTDisplacementData < handle
             % filter the data
             DTDD.CalcFilteredData();
         end
+        
+        function PrintSelf(DTDD)
+            % A function to print the current state of the displacement
+            % data object
+            %
+            % DTDD.PrintSelf()
+            %
+            fprintf(1,'\n%%%%%%%%%% DTDisplacementData Class Parameters %%%%%%%%%%\n');
+            DA.GetSpecimen().PrintSelf();
+            fprintf(1,'\n %%%% Scalar Inputs %%%%\n');
+            fprintf(1,'File name: %s\n',DTDD.GetFileName());
+            fprintf(1,'Time of first data point in experiment time: %f seconds\n',DTDD.GetTimeStart());
+            fprintf(1,'Sample rate: %f Hz\n',DTDD.GetSampleRate());
+            fprintf(1,'Filterind cutoff: %f Hz\n',DTDD.GetFilterCutoff());
+            fprintf(1,'Filter order: %d\n',DTDD.GetFilterOrder());
+            
+            fprintf(1,'\n %%%% Vector Outputs %%%%\n');
+            fprintf(1,'Time in displacement time frame: [%d,%d] seconds\n',size(DTDD.GetTimeDisplacement()));
+            fprintf(1,'Time in experimental time frame: [%d,%d] seconds\n',size(DTDD.GetTime()));
+            fprintf(1,'Filtered displacement of the trochanter: m\n',size(DTDD.GetDisplacementTroch()));
+            fprintf(1,'Raw displacement of the trochanter: m\n',size(DTDD.GetDisplacementTrochUnfiltered()));
+            fprintf(1,'Filtered displacement of the hammer: m\n',size(DTDD.GetDisplacementHammer()));
+            fprintf(1,'Raw displacement of the hammer: m\n',size(DTDD.GetDisplacementHammerUnfiltered()));
+        end
+            
             
         
     end % public methods
@@ -276,8 +308,17 @@ classdef DTDisplacementData < handle
             cutoffNormal = DTDD.m_filterCutoff / DTDD.m_sampleRate;
             [b,a] = butter(DTDD.m_filterOrder/2,cutoffNormal); % divide filter order by two since filtfilt doubles the order
             
-            DTDD.m_displacementTrochFilt = filtfilt(b,a,DTDD.m_displacementTroch);
-            DTDD.m_displacementHammerFilt = filtfilt(b,a,DTDD.m_displacementHammer);
+            troch = filtfilt(b,a,DTDD.GetDisplacementTrochUnfiltered());
+            hammer = filtfilt(b,a,DTDD.GetDisplacementHammerUnfiltered());
+            
+            % zero the data at the start
+            troch(:,1) = troch(:,1) - troch(1,1);
+            troch(:,2) = troch(:,2) - troch(1,2);
+            hammer(:,1) = hammer(:,1) - hammer(1,1);
+            hammer(:,2) = hammer(:,2) - hammer(1,2);
+            DTDD.m_displacementTrochFilt = troch;
+            DTDD.m_displacementHammerFilt = hammer;
+            
         end
 
     end % private methods

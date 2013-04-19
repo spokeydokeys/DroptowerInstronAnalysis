@@ -1,11 +1,14 @@
 classdef DICData < handle
-    properties (SetAccess = private)
+    properties (SetAccess = private, Hidden = false)
+        m_specimen      % the specimen data class    
+    end
+    
+    properties (SetAccess = private, Hidden = true)
         m_dicData           % strain
         m_dicTime           % seconds
         m_dicStartTime      % seconds
         m_dicSampleRate     % Hz
         m_dicDataFile = ''; % string
-        m_specimenData      % the specimen data class
     end
     methods
         % Constructor function
@@ -15,7 +18,7 @@ classdef DICData < handle
             %
             % DD = DICData(specimen)
             %
-            DD.m_specimenData = specimen;
+            DD.m_specimen = specimen;
         end
         
         function SetFileName(DD,fileName)
@@ -70,7 +73,7 @@ classdef DICData < handle
             %
             % Specimen = DD.GetSpecimen()
             %
-            o = DD.m_specimenData;
+            o = DD.m_specimen;
         end
 
         function o = GetStrainData(DD)
@@ -86,7 +89,7 @@ classdef DICData < handle
         function o = GetDICTime(DD)
             % A function to get the DIC time in seconds. This time may
             % not be aligned with the experiment time. The offset is
-            % set/get using DD.SetStartTime(time) and DD.GetStartTime()
+            % set/get using DD.SetStartTime(time) and DD.GetTimeStart()
             %
             % Time = DD.GetDICTime()
             %
@@ -106,16 +109,16 @@ classdef DICData < handle
             o = DD.m_dicTime + DD.m_dicStartTime;
         end
             
-        function o = GetStartTime(DD)
+        function o = GetTimeStart(DD)
             % A function to get the time of the first DIC data point in
             % seconds.
             %
-            % Time = DD.GetStartTime()
+            % Time = DD.GetTimeStart()
             %
             o = DD.m_dicStartTime;
         end
         
-        function ReadDataFile(DD)
+        function ReadFile(DD)
             % A function to read the DaVis strain output file. 
             % Strain must be percent minimum principal strain for this 
             % class to integrate properly with the rest of the analysis
@@ -130,7 +133,7 @@ classdef DICData < handle
                 fclose(inFid);
                 error('DICData:ReadError','The DIC data file specified for %s does not exist. Please check the file name and try again.\n',DD.GetSpecimen().GetSpcimenName());
             end
-            cline = fgetl(inFid);           % skip headerline
+            fgetl(inFid);           % skip headerline
             cline = fgetl(inFid);           % read in the y axis
             DD.m_dicData = str2num(cline)/100;  % convert to number and make % into strain
             cline = fgetl(inFid);           % read in the x axis
@@ -155,7 +158,7 @@ classdef DICData < handle
             %
             fprintf(1,'\n%%%%%%%%%% DICData Class Parameters %%%%%%%%%%\n');
             DD.GetSpecimen().PrintSelf();
-            fprintf(1,'DIC file name: sf\n',DD.m_dicDataFile);
+            fprintf(1,'DIC file name: %sf\n',DD.m_dicDataFile);
             fprintf(1,'DIC sample rate: %f Hz\n',DD.m_dicSampleRate);
             fprintf(1,'DIC start time: %f seconds\n',DD.m_dicStartTime);
             

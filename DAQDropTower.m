@@ -1,7 +1,8 @@
 classdef DAQDropTower < handle
-    properties (SetAccess = private)
-        m_specimen;
-        
+    properties (SetAccess = private, Hidden = false)
+        m_specimen;    
+    end
+    properties (SetAccess = private, Hidden = true)
         % members for the raw data
         m_forceSixDAQVoltage;
         m_forceSixDAQ;
@@ -456,6 +457,9 @@ classdef DAQDropTower < handle
         
         function PrintSelf(DD)
             % A function to print out all of the data contained in the class
+            %
+            % DD.PrintSelf()
+            %
             fprintf(1,'\n%%%%%%%%%% DAQDropTower Class Parameters %%%%%%%%%%\n');
             DD.GetSpecimen().PrintSelf();
             fprintf(1,'DAQ file name: %s\n',DD.GetFileName());
@@ -504,7 +508,6 @@ classdef DAQDropTower < handle
             %
             % DD.CalibrateForceSix()
             %
-            
             if isempty(DD.GetForceSixVoltage())
                 error('DropTowerDAQ:DataAvailablity','Unable to calibrate six axis load cell for %s. Load cell data not loaded.\n',DD.GetSpecimen().GetSpecimenName())
             end
