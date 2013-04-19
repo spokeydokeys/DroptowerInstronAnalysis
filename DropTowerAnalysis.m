@@ -13,7 +13,7 @@ classdef DropTowerAnalysis < handle
     properties(SetAccess = private, Hidden = true)    
         % machine members
         m_complianceDropTower = 1/5640000; % (m/N) measured in project 13-009
-        m_massDropTower = 23.18 + 6.419 + 21.36 + 9.94 + 35; % kg, mass of (Angle platen) + loadcell + t-slot + (DT base/3) + mounting apparatus
+        m_massDropTower = 23.18 + 6.419 + 21.36 + 9.94 + (4*.474+2.327+13.656+14.542+.507); % kg, mass of (Angle platen) + loadcell + t-slot + (DT base/3) + mounting apparatus
         m_complianceLoadingPlate = 1/30118000;  % m/N the loading plate compliance from the quasistatic testing
         
         % result vecotrs members

@@ -237,7 +237,7 @@ classdef DTDisplacementData < handle
                 warning('DropTowerDisplacement:DataAvailability','Time was requested for %s before start time was supplied. The time will not be referenced to the experiment.\n',DTDD.GetSpecimen().GetSpecimenName());
             end
             if isempty(DTDD.m_time)
-                DTDD.m_time = DTDD.GetTimeDisplacement() - DTDD.GetTimeStart();
+                DTDD.m_time = DTDD.GetTimeDisplacement() + DTDD.GetTimeStart();
             end
             o = DTDD.m_time;
         end
@@ -285,10 +285,10 @@ classdef DTDisplacementData < handle
             fprintf(1,'\n %%%% Vector Outputs %%%%\n');
             fprintf(1,'Time in displacement time frame: [%d,%d] seconds\n',size(DTDD.GetTimeDisplacement()));
             fprintf(1,'Time in experimental time frame: [%d,%d] seconds\n',size(DTDD.GetTime()));
-            fprintf(1,'Filtered displacement of the trochanter: m\n',size(DTDD.GetDisplacementTroch()));
-            fprintf(1,'Raw displacement of the trochanter: m\n',size(DTDD.GetDisplacementTrochUnfiltered()));
-            fprintf(1,'Filtered displacement of the hammer: m\n',size(DTDD.GetDisplacementHammer()));
-            fprintf(1,'Raw displacement of the hammer: m\n',size(DTDD.GetDisplacementHammerUnfiltered()));
+            fprintf(1,'Filtered displacement of the trochanter: [%d,%d] m\n',size(DTDD.GetDisplacementTroch()));
+            fprintf(1,'Raw displacement of the trochanter: [%d,%d] m\n',size(DTDD.GetDisplacementTrochUnfiltered()));
+            fprintf(1,'Filtered displacement of the hammer: [%d,%d] m\n',size(DTDD.GetDisplacementHammer()));
+            fprintf(1,'Raw displacement of the hammer: [%d,%d] m\n',size(DTDD.GetDisplacementHammerUnfiltered()));
         end
             
             

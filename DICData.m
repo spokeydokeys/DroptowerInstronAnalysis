@@ -135,6 +135,7 @@ classdef DICData < handle
             end
             fgetl(inFid);           % skip headerline
             cline = fgetl(inFid);           % read in the y axis
+            %#ok<*ST2NM>  - Suppress the strin to num warning
             DD.m_dicData = str2num(cline)/100;  % convert to number and make % into strain
             cline = fgetl(inFid);           % read in the x axis
             DD.m_dicTime = str2num(cline);  % convert to number
