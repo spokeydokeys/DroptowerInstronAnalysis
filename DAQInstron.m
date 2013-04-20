@@ -283,7 +283,7 @@ classdef DAQInstron < handle
             % the trigger is never filtered, but is passed to the output
             % vector when CalcFilteredData is called internally.
             %
-            % Trigger = DI.GetTriggerData()
+            % Trigger = DI.GetTriggerRaw()
             %
             o = DI.m_triggerDAQ;
         end
@@ -373,36 +373,37 @@ classdef DAQInstron < handle
             %
             fprintf(1,'\n%%%%%%%%%% DAQInstron Class Parameters %%%%%%%%%%\n');
             DI.GetSpecimen().PrintSelf();
-            fprintf(1,'DAQ file name: %s\n',DI.m_fileNameDAQ);
-            fprintf(1,'DAQ sample rate: %f Hz\n',DI.m_sampleRate);
-            fprintf(1,'DAQ sample period: %f seconds\n',DI.m_samplePeriod);
-            fprintf(1,'DAQ filter cutoff frequency: %f Hz\n',DI.m_filterCutoff);
-            fprintf(1,'DAQ filter order: %d\n',DI.m_filterOrder);
-            fprintf(1,'Instron displacement gain %f mm/V\n',DI.m_gainDisplacement);
-            fprintf(1,'Instron load gain %f N/V\n',DI.m_gainLoad);
+            fprintf(1,'\n %%%% Scalar Properties and Results %%%%\n');
+            fprintf(1,'DAQ file name: %s\n',DI.GetFileName());
+            fprintf(1,'DAQ sample rate: %f Hz\n',DI.GetSampleRate());
+            fprintf(1,'DAQ sample period: %f seconds\n',DI.GetSamplePeriod());
+            fprintf(1,'DAQ filter cutoff frequency: %f Hz\n',DI.GetFilterCutoff());
+            fprintf(1,'DAQ filter order: %d\n',DI.GetFilterOrder());
+            fprintf(1,'Instron displacement gain %f mm/V\n',DI.GetGainDisplacement());
+            fprintf(1,'Instron load gain %f N/V\n',DI.GetGainLoad());
             
             fprintf(1,'\n  %%%% Raw input data %%%%  \n');
-            fprintf(1,'DAQ force voltage: [%d,%d] in volts\n',size(DI.m_forceDAQVoltage));
-            fprintf(1,'DAQ force raw: [%d,%d] in newtons\n',size(DI.m_forceDAQ));
-            fprintf(1,'DAQ displacement voltage: [%d,%d] in volts\n',size(DI.m_displacementDAQVoltage));
-            fprintf(1,'DAQ displacement raw: [%d,%d] in mm\n',size(DI.m_displacementDAQ));
-            fprintf(1,'DAQ strain gauge 1 raw: [%d,%d] in strain\n',size(DI.m_strainGauge1DAQ));
-            fprintf(1,'DAQ strain gauge 2 raw: [%d,%d] in strain\n',size(DI.m_strainGauge2DAQ));
-            fprintf(1,'DAQ strain gauge 3 raw: [%d,%d] in strain\n',size(DI.m_strainGauge3DAQ));
-            fprintf(1,'DAQ trigger raw: [%d,%d] in volts\n',size(DI.m_triggerDAQ) );
-            fprintf(1,'DAQ time raw: [%d,%d] in seconds\n',size(DI.m_timeDAQ) );
+            fprintf(1,'DAQ force voltage: [%d,%d] in volts\n',size(DI.GetForceVoltage()));
+            fprintf(1,'DAQ force raw: [%d,%d] in newtons\n',size(DI.GetForceRaw()));
+            fprintf(1,'DAQ displacement voltage: [%d,%d] in volts\n',size(DI.GetDisplacementVoltage()));
+            fprintf(1,'DAQ displacement raw: [%d,%d] in mm\n',size(DI.GetDisplacementRaw()));
+            fprintf(1,'DAQ strain gauge 1 raw: [%d,%d] in strain\n',size(DI.GetStrainGauge1Raw()));
+            fprintf(1,'DAQ strain gauge 2 raw: [%d,%d] in strain\n',size(DI.GetStrainGauge2Raw()));
+            fprintf(1,'DAQ strain gauge 3 raw: [%d,%d] in strain\n',size(DI.GetStrainGauge3Raw()));
+            fprintf(1,'DAQ trigger raw: [%d,%d] in volts\n',size(DI.GetTriggerRaw()) );
+            fprintf(1,'DAQ time raw: [%d,%d] in seconds\n',size(DI.GetTimeRaw()) );
             
             fprintf(1,'\n  %%%% Analyzed data %%%%  \n');
-            fprintf(1,'DAQ force: [%d,%d] in newtons\n',size(DI.m_force));
-            fprintf(1,'DAQ displacement: [%d,%d] in mm\n',size(DI.m_displacement));
-            fprintf(1,'DAQ strain gauge 1: [%d,%d] in strain\n',size(DI.m_strainGauge1));
-            fprintf(1,'DAQ strain gauge 2: [%d,%d] in strain\n',size(DI.m_strainGauge2));
-            fprintf(1,'DAQ strain gauge 3: [%d,%d] in strain\n',size(DI.m_strainGauge3));
-            fprintf(1,'DAQ principal strain 1: [%d,%d] in strain\n',size(DI.m_strainGaugeP1));
-            fprintf(1,'DAQ principal strain 2: [%d,%d] in strain\n',size(DI.m_strainGaugeP2));
-            fprintf(1,'DAQ principal strain angle: [%d,%d] in radians\n',size(DI.m_strainGaugePhi));
-            fprintf(1,'DAQ trigger: [%d,%d] in volts\n',size(DI.m_trigger));
-            fprintf(1,'DAQ time: [%d,%d] in seconds\n\n',size(DI.m_time));
+            fprintf(1,'DAQ force: [%d,%d] in newtons\n',size(DI.GetForce()));
+            fprintf(1,'DAQ displacement: [%d,%d] in mm\n',size(DI.GetDisplacement()));
+            fprintf(1,'DAQ strain gauge 1: [%d,%d] in strain\n',size(DI.GetStrainGauge1()));
+            fprintf(1,'DAQ strain gauge 2: [%d,%d] in strain\n',size(DI.GetStrainGauge2()));
+            fprintf(1,'DAQ strain gauge 3: [%d,%d] in strain\n',size(DI.GetStrainGauge3()));
+            fprintf(1,'DAQ principal strain 1: [%d,%d] in strain\n',size(DI.GetPrincipalStrain1()));
+            fprintf(1,'DAQ principal strain 2: [%d,%d] in strain\n',size(DI.GetPrincipalStrain2()));
+            fprintf(1,'DAQ principal strain angle: [%d,%d] in radians\n',size(DI.GetPrincipalStrainAngle()));
+            fprintf(1,'DAQ trigger: [%d,%d] in volts\n',size(DI.GetTrigger()));
+            fprintf(1,'DAQ time: [%d,%d] in seconds\n\n',size(DI.GetTime()));
         end
         
         function Update(DI)

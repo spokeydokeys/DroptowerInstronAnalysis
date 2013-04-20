@@ -422,7 +422,7 @@ classdef InstronAnalysis < handle
             IA.GetSpecimen().PrintSelf();
             
             fprintf(1,'\n  %%%% Instron Analysis Class Parameters %%%%\n');
-            fprintf(1,'Instron compliance: %f m/N\n',IA.GetInstronCompliance());
+            fprintf(1,'Instron compliance: %e m/N\n',IA.GetInstronCompliance());
             fprintf(1,'Specimen stiffness: %f N/m\n',IA.GetStiffness());
             fprintf(1,'Maximum force: %f N\n',IA.GetForceMax());                  
             fprintf(1,'Time at max force: %f seconds\n',IA.GetTimeForceMax());
@@ -539,10 +539,9 @@ classdef InstronAnalysis < handle
             compression = IA.GetCompression();
             force = IA.GetForce();
             % find the valid data
-            valid = ~isnan(compression).*~isnan(force);
             % numerically integrate using the valid indexes up to the max
             % force index using compression in m.
-            IA.m_energyToForceMax = trapz(compression(valid(1:IA.GetIndexForceMax()-1)),force(valid(1:IA.GetIndexForceMax()-1)));
+            IA.m_energyToForceMax = trapz(compression(1:IA.GetIndexForceMax()-1),force(1:IA.GetIndexForceMax()-1));
         end
 
         function CalcStrainAtMaxGauge(IA,radiusMedianFilter)
@@ -586,7 +585,7 @@ classdef InstronAnalysis < handle
             if isempty(IA.GetDICData())
                 error('InstronAnalysis:DataAvailability','DIC frame at max load for %s requested when no DIC data is available.\n',IA.GetSpecimen().GetSpecimenName());
             end
-            IA.m_frameAtMax = ( IA.GetTimeForceMax() - IA.GetDICData.GetTimeStart )*IA.GetDICData.GetSampleRate;
+            IA.m_frameAtMax = floor(( IA.GetTimeForceMax() - IA.GetDICData.GetTimeStart )*IA.GetDICData.GetSampleRate);
         end
 
         function CalcStrainError(IA)

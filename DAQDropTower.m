@@ -462,6 +462,7 @@ classdef DAQDropTower < handle
             %
             fprintf(1,'\n%%%%%%%%%% DAQDropTower Class Parameters %%%%%%%%%%\n');
             DD.GetSpecimen().PrintSelf();
+            fprintf(1,'\n %%%% Scalar Members and Properties %%%%\n');
             fprintf(1,'DAQ file name: %s\n',DD.GetFileName());
             fprintf(1,'DAQ sample rate: %f Hz\n',DD.GetSampleRate());
             fprintf(1,'DAQ sample period: %f s\n',DD.GetSamplePeriod());

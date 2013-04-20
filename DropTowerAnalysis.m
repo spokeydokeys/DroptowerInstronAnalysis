@@ -559,8 +559,7 @@ classdef DropTowerAnalysis < handle
                 % if the displacement is also available calc compression
                 if DA.GetSpecimen().GetDataAvailable().DropTowerDisplacement
                     DA.CalcCompression();
-                    DA.CalcRateCompression();
-                end               
+                end
                 % if the instron is available get the instron max data
                 if DA.GetSpecimen().GetDataAvailable().InstronDAQ
                     DA.CalcForceInstronMax();
@@ -570,10 +569,15 @@ classdef DropTowerAnalysis < handle
                     end      
                 end
                 % find the max force
-                DA.CalcForceMax();               
+                DA.CalcForceMax();                
                 % find the start and finish of the impact
                 DA.CalcImpactStart();
                 DA.CalcImpactFinish();
+                % if displacement is available calc compression rate to max
+                % force
+                if DA.GetSpecimen().GetDataAvailable().DropTowerDisplacement
+                    DA.CalcRateCompression();
+                end               
                 % if dic available find frame at the max force
                 if DA.GetSpecimen().GetDataAvailable().DropTowerDIC
                     DA.CalcFrameForceMax();
@@ -603,17 +607,18 @@ classdef DropTowerAnalysis < handle
             %
             % DA.PrintSelf()
             %
-            fprintf(1,'\n%%%%%%%%%% DAQInstron Class Parameters %%%%%%%%%%\n');
+            fprintf(1,'\n%%%%%%%%%% DropTowerAnalysis Class Parameters %%%%%%%%%%\n');
             DA.GetSpecimen().PrintSelf();
-            fprintf(1,'Machine compliance: %f m/N\n',DA.GetComplianceDropTower());
-            fprintf(1,'Loading plate compliance: %f m/N\n',DA.GetComplianceLoadingPlate());
+            fprintf(1,'\n %%%% Scalar Members and Properties %%%%\n');
+            fprintf(1,'Machine compliance: %e m/N\n',DA.GetComplianceDropTower());
+            fprintf(1,'Loading plate compliance: %e m/N\n',DA.GetComplianceLoadingPlate());
             fprintf(1,'Mass drop tower pleten: %f kg\n',DA.GetMassDropTower());
             fprintf(1,'Frequency of common time: %f Hz\n',DA.GetCommonTimeRate());
             fprintf(1,'Max Instron force: %f N\n',DA.GetForceInstronMax());
                         
             fprintf(1,'\n %%%% Scalar Results %%%% \n');
             fprintf(1,'Stiffness: %f N/m\n',DA.GetStiffness());
-            fprintf(1,'Max force: %f N\n,',DA.GetForceMax());
+            fprintf(1,'Max force: %f N\n',DA.GetForceMax());
             fprintf(1,'Compression at max force: %f m\n',DA.GetCompressionForceMax());
             fprintf(1,'Compression at max instron force: %f m\n',DA.GetCompressionForceInstronMax());
             fprintf(1,'Compression rate of the specimen: %f m/s\n',DA.GetRateCompression());
@@ -628,8 +633,8 @@ classdef DropTowerAnalysis < handle
             fprintf(1,'Index of max force: %d\n',DA.GetIndexForceMax());
             fprintf(1,'Index of max instron force: %d\n',DA.GetIndexForceInstronMax());
             fprintf(1,'Index of impact finish: %d\n',DA.GetIndexImpactFinish());
-            fprintf(1,'Principal strain at max force:\n\t[%15f strain,\n\t,%15f strain,\n\t%15f radians]\n',DA.GetPrincipalStrainGaugeAtForceMax());
-            fprintf(1,'Principal strain at max instron force:\n\t[%15f strain,\n\t,%15f strain,\n\t%15f radians]\n',DA.GetPrincipalStrainGaugeAtForceInstronMax());
+            fprintf(1,'Principal strain at max force:\n\t[%15f strain,\n\t%15f strain,\n\t%15f radians]\n',DA.GetPrincipalStrainGaugeAtForceMax());
+            fprintf(1,'Principal strain at max instron force:\n\t[%15f strain,\n\t%15f strain,\n\t%15f radians]\n',DA.GetPrincipalStrainGaugeAtForceInstronMax());
             fprintf(1,'DIC strain at max force: %f strain\n',DA.GetStrainDICAtForceMax());
             fprintf(1,'DIC strain at max instron force: %f strain\n',DA.GetStrainDICAtForceInstronMax());
             fprintf(1,'DIC frame at max force: %d\n',DA.GetFrameAtForceMax());
@@ -1170,6 +1175,12 @@ classdef DropTowerAnalysis < handle
             %
             % DA.CalcRateDisplacement()
             %
+            if isempty(DA.GetIndexForceMax())
+                error('DropTowerAnalysis:DataAvailability','Compression rate was requested for %s before max force was available.\n',DA.GetSpecimen().GetSpecimenName());
+            end
+            if isempty(DA.GetIndexImpactStart())
+                error('DropTowerAnalysis:DataAvailability','Compression rate was requested for %s before the impact start was available.\n',DA.GetSpecimen().GetSpecimenName());
+            end
             comp = DA.GetCompression();
             time = DA.GetTime();
             

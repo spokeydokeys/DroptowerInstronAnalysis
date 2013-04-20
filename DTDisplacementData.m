@@ -274,7 +274,7 @@ classdef DTDisplacementData < handle
             % DTDD.PrintSelf()
             %
             fprintf(1,'\n%%%%%%%%%% DTDisplacementData Class Parameters %%%%%%%%%%\n');
-            DA.GetSpecimen().PrintSelf();
+            DTDD.GetSpecimen().PrintSelf();
             fprintf(1,'\n %%%% Scalar Inputs %%%%\n');
             fprintf(1,'File name: %s\n',DTDD.GetFileName());
             fprintf(1,'Time of first data point in experiment time: %f seconds\n',DTDD.GetTimeStart());
