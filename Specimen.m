@@ -23,7 +23,7 @@ classdef Specimen < handle
             % dxa is a structure with fields:
             %      'neck','troch','inter','total','wards'
             % op is one of:
-            %      'normal','osteopenia','osteoporosis'
+            %      'normal','osteopenia','osteoporosis','unknown'
             % data is a structure of bools indicating what data with 
             % is available. It is comprised of the fields:
             %      'InstronDAQ','InstronDIC','DropTowerDAQ','DropTowerDisplacement','DropTowerDIC'
@@ -77,7 +77,7 @@ classdef Specimen < handle
             %
             % SP.SetOpStatus(status)
             %
-            if (~strcmp(op,'normal') && ~strcmp(op,'osteopenia') && ~strcmp(op,'osteoporosis') )
+            if (~strcmp(op,'normal') && ~strcmp(op,'osteopenia') && ~strcmp(op,'osteoporosis') &&~strcmp(op,'unknown' ))
                 error('Specimen:opFault','Invalid osteoporosis state specified. Please check the value for %s and retry. Aborting.\n',SP.m_specimenName);
             end
             SP.m_opStatus = op;
