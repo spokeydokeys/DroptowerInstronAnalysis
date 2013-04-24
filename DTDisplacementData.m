@@ -237,14 +237,14 @@ classdef DTDisplacementData < handle
             %
             % Time = DTDD.GetTime()
             %
-            if isempty(DTDD.GetTimeStart())
-                warning('DropTowerDisplacement:DataAvailability','Time was requested for %s before start time was supplied. The time will not be referenced to the experiment.\n',DTDD.GetSpecimen().GetSpecimenName());
+            if isempty(DTDD.GetSampleRate() )
+                error('DropTowerDisplacement:DataAvailability','Time was requested for %s before sample rate was supplied. The time will not be referenced to the experiment.\n',DTDD.GetSpecimen().GetSpecimenName());
             end
-%             if isempty(DTDD.m_time)
-%                 DTDD.m_time = DTDD.GetTimeDisplacement() + DTDD.GetTimeStart();
-%             end
-            time = DTDD.GetTimeDisplacement();
-            o = time(1):1/DTDD.GetSampleRate():time(end) + DTDD.GetTimeStart();
+            if isempty(DTDD.GetTimeStart() )
+                warning('DropTowerDisplacement:DataAvailability','Time was requested for %s before start time was supplied. The time will not be referenced to the experiment.\n',DTDD.GetSpecimen().GetSpecimenName());
+                DTDD.SetTimeStart(0);
+            end
+            o = (0:1/DTDD.GetSampleRate():(length(DTDD.GetTimeDisplacement)-1)/DTDD.GetSampleRate()) + DTDD.GetTimeStart();
         end
         
         function Update(DTDD)
