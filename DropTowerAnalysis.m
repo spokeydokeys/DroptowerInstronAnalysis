@@ -521,14 +521,18 @@ classdef DropTowerAnalysis < handle
             o = interp1(DA.GetTime(),forceSix(:,3),t);
         end
         
-        function Update(DA)
+        function Update(DA,recalcMax)
             % A function to check the data availability and update the
             % status of all the class properties. Does not call ReadFile()
-            % which must be done by the user.
+            % which must be done by the user. If recalculation of the
+            % maximum force is not required, pass a "0" for recalcMax, 
+            % which is an optional variable. 
             %
-            % DA.Update()
+            % DA.Update(recalcMax(optional, default = 1))
             %
-            
+            if nargin < 1
+                recalcMax = 1;
+            end
             % check for what data we have and what is needed
             
             % if the DAQ is available, update and import
@@ -569,7 +573,9 @@ classdef DropTowerAnalysis < handle
                     end      
                 end
                 % find the max force
-                DA.CalcForceMax();                
+                if recalcMax
+                    DA.CalcForceMax();
+                end
                 % find the start and finish of the impact
                 DA.CalcImpactStart();
                 DA.CalcImpactFinish();

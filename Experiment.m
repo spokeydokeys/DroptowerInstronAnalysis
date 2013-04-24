@@ -85,12 +85,18 @@ classdef Experiment < handle
             o = EXP.m_strainAtForceInstronMaxDelta;
         end        
         
-        function Update(EXP)
+        function Update(EXP,recalcMax)
             % A function to update the state of the analysis.
             %
-            % EXP.Update()
+            % The optional input "recalcMax" is a bool flag to indicate if
+            % the drop tower max force should be recalculated. The default
+            % value is 1 (yes, recalculate)
             %
-            
+            % EXP.Update(recalcMax)
+            %
+            if nargin<1
+                recalcMax = 1;
+            end
             ins = EXP.GetInstron();
             dt = EXP.GetDropTower();
             
@@ -106,7 +112,7 @@ classdef Experiment < handle
                 insExist = 0;
             end
             if ~isempty(dt)
-                dt.Update();
+                dt.Update(recalcMax);
                 dtExist = 1;
             else
                 dtExist = 0;

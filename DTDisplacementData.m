@@ -228,18 +228,23 @@ classdef DTDisplacementData < handle
         
         function o = GetTime(DTDD)
             % A function to get the time in seconds in the experimental
-            % time frame. If no start time has been set, a warning will be
-            % issued.
+            % time frame. If no start time or sample rate has been set, a 
+            % warning will be issued. 
+            % The original data given by TEMA was rounded to the nearest
+            % 0.1 ms. This function returns a time vector of the correct
+            % length that has a spacing of 1/GetSampleRate(), resulting
+            % in a smooth time vector.
             %
             % Time = DTDD.GetTime()
             %
             if isempty(DTDD.GetTimeStart())
                 warning('DropTowerDisplacement:DataAvailability','Time was requested for %s before start time was supplied. The time will not be referenced to the experiment.\n',DTDD.GetSpecimen().GetSpecimenName());
             end
-            if isempty(DTDD.m_time)
-                DTDD.m_time = DTDD.GetTimeDisplacement() + DTDD.GetTimeStart();
-            end
-            o = DTDD.m_time;
+%             if isempty(DTDD.m_time)
+%                 DTDD.m_time = DTDD.GetTimeDisplacement() + DTDD.GetTimeStart();
+%             end
+            time = DTDD.GetTimeDisplacement();
+            o = time(1):1/DTDD.GetSampleRate():time(end) + DTDD.GetTimeStart();
         end
         
         function Update(DTDD)
