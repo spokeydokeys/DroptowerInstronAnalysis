@@ -510,9 +510,9 @@ classdef DropTowerAnalysis < handle
         end
         
         function o = GetForceSixCompressionAtTime(DA,t)
-            % A function to get the force from the six axis load cell,
-            % z-comp at an arbitrary time using interpolation. The force
-            % is given in N.
+            % A function to get the compressive force from the six axis
+            % load cell at an arbitrary time using interpolation. 
+            % The force is given in N.
             %
             % Force = DA.GetSixCompressionForceAtTime(time)
             %
