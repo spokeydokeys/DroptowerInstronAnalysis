@@ -381,7 +381,7 @@ classdef DropTowerAnalysis < handle
         function o = GetStrainDICAtForceMax(DA)
             % A function to get the DIC strain in absolute strain at
             % the max force, defined using the z-comp of the six axis
-            % load cell
+            % load cell. Returns the median strain with a window of 5.
             %
             % Strain = DA.GetStrainDICAtForceMax()
             %
@@ -391,7 +391,8 @@ classdef DropTowerAnalysis < handle
         function o = GetStrainDICAtForceInstronMax(DA)
             % A function to get the DIC strain in absolute strain at
             % the max instron force, defined in the drop tower using the
-            % z-comp of the six axis load cell.
+            % z-comp of the six axis load cell. Returns the median strain 
+            % with a window of 5.
             %
             % Strain = DA.GetStrainDICAtForceInstronMax()
             %
@@ -932,7 +933,7 @@ classdef DropTowerAnalysis < handle
             % If DIC data is available, get the dic strain at max force
             if DA.GetSpecimen().GetDataAvailable().DropTowerDIC
                 dic = DA.GetStrainDIC();
-                DA.m_strainDICAtForceMax = dic(indexM);
+                DA.m_strainDICAtForceMax = median(dic(indexM-2:indexM+2));
             end
             
             % If disp data is available, get the compression at max force
@@ -1006,7 +1007,7 @@ classdef DropTowerAnalysis < handle
             % If DIC for the DT is available, get the DIC strain at max instron force
             if DA.GetSpecimen().GetDataAvailable().DropTowerDIC
                 dic = DA.GetStrainDIC();
-                DA.m_strainDICAtForceInstronMax = dic(indexIM);
+                DA.m_strainDICAtForceInstronMax = median(dic(indexIM-2:indexIM+2));
             end
             
             % If disp is available, get the compression at max instron force
