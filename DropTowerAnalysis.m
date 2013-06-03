@@ -243,6 +243,20 @@ classdef DropTowerAnalysis < handle
             o = DA.m_forceSix;
         end
         
+        function o = GetForce(DA)
+            % A function to get the axial force trace from the six axis
+            % load cell. This returns the third column of the matrix
+            % returned by GetForceSix, ie the six axis load cell axial
+            % measurement.
+            % The force is in N.
+            %
+            % Force = DA.GetForce()
+            %
+            forceSix = DA.GetForceSix;
+            
+            o = forceSix(:,3);
+        end            
+        
         function o = GetForceOne(DA)
             % A function to get the single axisl load cell data vector.
             % The force is in N.

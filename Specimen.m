@@ -16,7 +16,7 @@ classdef Specimen < handle
             % The constructor takes the name, DXA values the osteoporosis
             % status and the available data as inputs.
             % name is a string
-            % gender is one of: 'm' or 'f'
+            % gender is one of: 'm' or 'f' - use 'u' for unknown
             % age is a number in years - use 0 for unknown
             % height is a number in cm - use 0 for unknown
             % weight is a number in kg - use 0 for unknown
@@ -127,7 +127,7 @@ classdef Specimen < handle
             %
             % SP.SetGender(gender)
             %
-            if (~strcmp(gender,'m') && ~strcmp(gender,'f'))
+            if (~strcmp(gender,'m') && ~strcmp(gender,'f') && ~strcmp(gender,'u'))
                 error('Specimen:genderFault','An invalid gender was supplied for %s.\n',SP.m_specimenName);
             end
             SP.m_gender = gender;

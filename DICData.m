@@ -27,7 +27,7 @@ classdef DICData < handle
             % DD.SetFileName(file)
             %
             while (~exist(fileName,'file'))
-                sprintf('The specified DIC data file does not exist\n');
+                fprintf(1,'The specified DIC data file does not exist for specimen %s\n',DD.GetSpecimen.GetSpecimenName);
                 fileName = input('Please enter a valid file location: ');
             end                
             DD.m_dicDataFile = fileName;

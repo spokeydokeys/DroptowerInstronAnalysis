@@ -464,7 +464,8 @@ classdef InstronAnalysis < handle
             %
             % IA.CreateCommonTimeVector()
             %
-            IA.m_time = 0.2:1/IA.GetCommonTimeRate():15;
+            time = IA.GetDAQData.GetTime;
+            IA.m_time = 0.2:1/IA.GetCommonTimeRate():max(time);
         end
 
         function InterpolateDAQToCommonTime(IA)

@@ -54,7 +54,7 @@ classdef Experiment < handle
         end
         
         function o = GetStiffnessDelta(EXP)
-            % A function to get the difference in stiffness betweeen the
+            % A function to get the difference in stiffness between the
             % instron and drop tower in N/m, calculated as:
             %    InstronStiffness - DropTowerStiffness
             %
