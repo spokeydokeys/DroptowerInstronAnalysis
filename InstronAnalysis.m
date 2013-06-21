@@ -503,7 +503,7 @@ classdef InstronAnalysis < handle
 
         function CalcStiffness(IA)
             % A function to calculate the stiffness of the specimen. Uses
-            % the max force and the half max force to calcualte the
+            % the 25% and 75% of the max force to calcualte the
             % stiffness.
             %
             % IA.CalcStiffness()
@@ -513,16 +513,18 @@ classdef InstronAnalysis < handle
                 warning('InstronAnalysis:ExecutionOrder','Stiffness requested for %s before calculation of max force.\nMax force calculation being executed now.\n',IA.GetSpecimen().GetSpecimenName())
             end 
             % get the second force level for stiffness calculation
-            forceTwo = IA.GetForceMax()/2;
+            forceOne = IA.GetForceMax()*.75;
+            forceTwo = IA.GetForceMax()*.25;
             % get the index for the force at half max force
+            indexForceOne = find(IA.GetForce() > forceOne,1,'first');
             indexForceTwo = find(IA.GetForce() > forceTwo,1,'first');
             % get the diplacement at max force
             compression = IA.GetCompression();
-            dispForceMax = compression(IA.GetIndexForceMax());
             % get the displacement at force two
+            dispForceOne = compression(indexForceOne);
             dispForceTwo = compression(indexForceTwo);
             % calculate the stiffness between force two and force max
-            stiffness = (IA.GetForceMax() - forceTwo)/(dispForceMax - dispForceTwo);
+            stiffness = (forceOne - forceTwo)/(dispForceOne - dispForceTwo);
             % convert to N/m
             IA.m_stiffness = stiffness;
         end

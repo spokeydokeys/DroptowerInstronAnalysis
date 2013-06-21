@@ -464,15 +464,17 @@ classdef DAQInstron < handle
         
     methods (Access = private, Hidden = true)
         function ApplyGainDisplacement(DI)
-            % A function to apply the gain to the raw displecement vector
+            % A function to apply the gain to the raw displecement vector.
+            % Also sets the initial displacemt to zero.
             %
             % DI.ApplyGainDisplacement()
             %
             if ~DI.m_gainDisplacement
                 error('InstronDAQ:DataAvailability','Apply displacement gain for %s was attempted when no gain was set.\n',DI.GetSpecimen().GetSpecimenName());
             end
+            dispDAQVoltage = DI.m_displacementDAQVoltage;
             % apply gain and convert to m
-            DI.m_displacementDAQ = (DI.m_displacementDAQVoltage * DI.m_gainDisplacement)./1000;
+            DI.m_displacementDAQ = ( (DI.m_displacementDAQVoltage - dispDAQVoltage(1)) * DI.m_gainDisplacement)./1000;
         end
         
         function ApplyGainLoad(DI)

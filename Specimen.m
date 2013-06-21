@@ -28,7 +28,7 @@ classdef Specimen < handle
             % is available. It is comprised of the fields:
             %      'InstronDAQ','InstronDIC','DropTowerDAQ','DropTowerDisplacement','DropTowerDIC'
             %
-            % Sp = Specimen([SpecimenName],[age],[height],[weight],[DXAValues],[OPStatus])
+            % Sp = Specimen([SpecimenName],[gender],[age],[height],[weight],[DXAValues],[OPStatus],[Data])
             SP.SetSpecimenName(name);
             SP.SetDXA(dxa);
             SP.SetOpStatus(op);
