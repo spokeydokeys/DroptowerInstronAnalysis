@@ -591,6 +591,8 @@ classdef DropTowerAnalysis < handle
                 if recalcMax
                     DA.CalcForceMax();
                 end
+                % find properties at the max force
+                DA.CalcPropertiesForceMax();                
                 % find the start and finish of the impact
                 DA.CalcImpactStart();
                 DA.CalcImpactFinish();
@@ -938,10 +940,25 @@ classdef DropTowerAnalysis < handle
             % set the max force properties
             DA.m_forceMax = valueM;
             DA.m_indexAtForceMax = indexM;
+        end
+        
+        function CalcPropertiesForceMax(DA)
+            % A function to calculate the properties that depend on the
+            % maximum force, such as stiffness and strain at max force.
+            % This should be called after CalcForceMax. If the max force is
+            % not being selected, but reused from a previously set value,
+            % then this can be called without calling CalcForceMax
+            %
+            % DA.CalcPropertiesAtForceMax()
+            %
+            
+            indexM = DA.GetIndexForceMax();
+            % Time at force max
             expTime = DA.GetTime();
             DA.m_timeAtForceMax = expTime(indexM);
+            
+            % gauge strain at force max
             strainG = DA.GetPrincipalStrain();
-
             DA.m_strainPrincipalGaugeAtForceMax = strainG(indexM,:);
             
             % If DIC data is available, get the dic strain at max force
@@ -955,7 +972,10 @@ classdef DropTowerAnalysis < handle
                 disp = DA.GetCompression();
                 DA.m_compressionAtForceMax = disp(indexM);
             end
+            
         end
+            
+            
       
         function CalcImpactFinish(DA)
             % A function to get the finish of the impact. This will find
@@ -1047,7 +1067,21 @@ classdef DropTowerAnalysis < handle
                 error('DropTowerAnalysis:DataAvailability','Stiffness for %s was requested before the compression at max force was calaculated.\n',DA.GetSpecimen().GetSpecimenName());
             end
             
-            DA.m_stiffness = DA.GetForceMax()/DA.GetCompressionForceMax();
+            force = DA.GetForce;
+            compression = DA.GetCompression;
+            indexMax = DA.GetIndexForceMax;
+            
+            % find the forces and compressions at 25% and 90% of force max
+            index90 = find(force(1:indexMax)<DA.GetForceMax*0.9,1,'last');        
+            force90 = force(index90);
+            comp90 = compression(index90);
+            
+            index25 = find(force(1:indexMax)<DA.GetForceMax*0.25,1,'last');
+            force25 = force(index25);
+            comp25 = compression(index25);
+            
+            
+            DA.m_stiffness = (force90-force25)/(comp90-comp25);
         end
         
         function CalcEnergyToForceMax(DA)
